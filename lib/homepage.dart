@@ -1,5 +1,6 @@
 // --- Home Page ---
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:skedule3/main.dart';
 
 class HomePage extends StatefulWidget {
@@ -32,7 +33,7 @@ class _HomePageState extends State<HomePage> {
         .from('class')
         .select()
         .eq('day', today)
-        .eq('user_id', userId) // Assuming a user_id column in 'class' table
+        .eq('id', userId) // Assuming a user_id column in 'class' table
         .order('start_time', ascending: true)
         .then((data) => data.map((json) => Class.fromJson(json)).toList());
 

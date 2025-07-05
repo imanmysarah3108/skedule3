@@ -111,7 +111,7 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
         'end_time': '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}:00',
         'color_hex': _selectedColor,
         'reminder': _setReminder,
-        'user_id': userId, // Link class to user
+        'id': userId, // Link class to user
       };
 
       if (widget.classToEdit == null) {

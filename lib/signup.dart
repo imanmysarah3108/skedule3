@@ -1,6 +1,7 @@
 // --- Sign Up Page ---
 import 'package:flutter/material.dart';
 import 'package:skedule3/main.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});

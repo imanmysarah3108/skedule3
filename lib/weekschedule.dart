@@ -1,5 +1,6 @@
 // --- Whole Week Schedule Page ---
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:skedule3/main.dart';
 
 class WeekSchedulePage extends StatefulWidget {
@@ -37,7 +38,7 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
           .from('class')
           .select()
           .eq('day', day)
-          .eq('user_id', userId) // Assuming user_id column
+          .eq('id', userId) // Assuming user_id column
           .order('start_time', ascending: true)
           .then((data) => data.map((json) => Class.fromJson(json)).toList());
     });

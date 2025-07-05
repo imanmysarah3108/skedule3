@@ -2,18 +2,19 @@
 import 'package:flutter/material.dart';
 import 'package:skedule3/add_task.dart';
 import 'package:skedule3/edit_class.dart';
+import 'package:skedule3/homepage.dart';
 import 'package:skedule3/login.dart';
 import 'package:skedule3/profile.dart';
 import 'package:skedule3/signup.dart';
 import 'package:skedule3/weekschedule.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart'; // For date formatting
+// For date formatting
 
 // --- Supabase Configuration ---
 // Replace with your actual Supabase URL and Anon Key
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://ivhpkpjdgirodyjvypwd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aHBrcGpkZ2lyb2R5anZ5cHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NDU1NzMsImV4cCI6MjA2NjIyMTU3M30.Tev4ouZoxt8XpWsOn_PYDx0mtLLoJsfqPRgZoEDdVYY"';
 
 // --- Theme Provider for Dark/Light Mode ---
 class ThemeProvider extends ChangeNotifier {
@@ -37,8 +38,8 @@ void main() async {
 
   // Initialize Supabase
   await Supabase.initialize(
-    url: SUPABASE_URL,
-    anonKey: SUPABASE_ANON_KEY,
+    url: 'https://ivhpkpjdgirodyjvypwd.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aHBrcGpkZ2lyb2R5anZ5cHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NDU1NzMsImV4cCI6MjA2NjIyMTU3M30.Tev4ouZoxt8XpWsOn_PYDx0mtLLoJsfqPRgZoEDdVYY',
   );
 
   runApp(
@@ -58,18 +59,19 @@ class SkeduleApp extends StatefulWidget {
 
 class _SkeduleAppState extends State<SkeduleApp> {
   @override
-  void initState() {
-    super.initState();
-    // Listen for auth changes and navigate accordingly
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      final event = data.event;
+void initState() {
+  super.initState();
+  Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    final event = data.event;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (event == AuthChangeEvent.signedIn) {
         Navigator.of(context).pushReplacementNamed('/home');
       } else if (event == AuthChangeEvent.signedOut) {
         Navigator.of(context).pushReplacementNamed('/login');
       }
     });
-  }
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +91,7 @@ class _SkeduleAppState extends State<SkeduleApp> {
           foregroundColor: Colors.black87,
           elevation: 0,
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -126,7 +128,7 @@ class _SkeduleAppState extends State<SkeduleApp> {
         ),
         scaffoldBackgroundColor: Colors.grey[850],
         cardColor: Colors.grey[800],
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
