@@ -1,4 +1,4 @@
-// --- Home Page ---
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skedule3/SubFabButton.dart';
@@ -55,34 +55,34 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Future<void> _fetchData() async {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
-      // Handle case where user is not logged in, perhaps navigate to login
+      
       return;
     }
 
-    // Fetch today's classes
-    final today = DateFormat('EEEE').format(DateTime.now()); // Get full day name e.g., "Friday"
+    
+    final today = DateFormat('EEEE').format(DateTime.now()); 
     _todayClassesFuture = supabase
         .from('class')
         .select()
         .eq('day', today)
-        .eq('id', userId) // Assuming a user_id column in 'class' table
+        .eq('id', userId) 
         .order('start_time', ascending: true)
         .then((data) => data.map((json) => Class.fromJson(json)).toList());
 
-    // Fetch upcoming tasks (e.g., tasks due in the next 7 days and not completed)
+   
     final now = DateTime.now();
     final sevenDaysLater = now.add(const Duration(days: 7));
     _upcomingTasksFuture = supabase
         .from('assignment')
         .select()
-        .eq('id', userId) // 'id' in assignment table refers to user_id
+        .eq('id', userId) 
         .eq('is_completed', false)
         .gte('due_date', DateFormat('yyyy-MM-dd').format(now))
         .lte('due_date', DateFormat('yyyy-MM-dd').format(sevenDaysLater))
         .order('due_date', ascending: true)
         .then((data) => data.map((json) => Assignment.fromJson(json)).toList());
 
-    setState(() {}); // Trigger rebuild to show loading indicators
+    setState(() {}); 
   }
 
   Future<void> _toggleTaskCompletion(Assignment assignment) async {

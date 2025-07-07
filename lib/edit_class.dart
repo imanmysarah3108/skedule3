@@ -333,13 +333,22 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton(
-                      onPressed: _saveClass,
-                      child: Text(widget.classToEdit == null ? 'Add Class' : 'Update Class'),
-                    ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch, 
+                children: [
+                  const SizedBox(height: 24),
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : SizedBox(
+                          height: 48, 
+                          child: ElevatedButton(
+                            onPressed: _saveClass,
+                            child: Text(widget.classToEdit == null ? 'Add Class' : 'Update Class'),
+                          ),
+                        ),
+                    const SizedBox(height: 24),
+                ],
+              ), 
             ],
           ),
         ),

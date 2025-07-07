@@ -1,10 +1,9 @@
-// --- Add Task Screen ---
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skedule3/main.dart';
 
 class AddTaskPage extends StatefulWidget {
-  final Assignment? taskToEdit; // Optional, for editing existing task
+  final Assignment? taskToEdit; 
   const AddTaskPage({super.key, this.taskToEdit});
 
   @override
@@ -15,10 +14,14 @@ class _AddTaskPageState extends State<AddTaskPage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _subjectIdController = TextEditingController(); // To link with a subject
+  final _subjectIdController = TextEditingController(); 
   DateTime? _dueDate;
-  String _selectedPriority = 'medium'; // Default priority
+  String _selectedPriority = 'medium'; 
   bool _isLoading = false;
+
+  
+  bool _isLoadingSubjects = true;
+  List<String> _userSubjectIds = [];
 
   final List<String> _priorityLevels = ['high', 'medium', 'low'];
 
@@ -31,6 +34,34 @@ class _AddTaskPageState extends State<AddTaskPage> {
       _subjectIdController.text = widget.taskToEdit!.subjectId;
       _dueDate = widget.taskToEdit!.dueDate;
       _selectedPriority = widget.taskToEdit!.priority;
+    }
+    _loadSubjects(); 
+  }
+
+  // ✅ Load user-specific subject IDs
+  Future<void> _loadSubjects() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      final response = await supabase
+          .from('subject')
+          .select('subject_id')
+          .eq('id', userId);
+
+      setState(() {
+        _userSubjectIds = (response as List)
+            .map((item) => item['subject_id'].toString())
+            .toList();
+        _isLoadingSubjects = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        showSnackBar(context, 'Failed to load subjects: $e', isError: true);
+        setState(() {
+          _isLoadingSubjects = false;
+        });
+      }
     }
   }
 
@@ -64,7 +95,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
       showSnackBar(context, 'User not logged in.', isError: true);
-      setState(() { _isLoading = false; });
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -73,21 +106,19 @@ class _AddTaskPageState extends State<AddTaskPage> {
         'assignment_title': _titleController.text.trim(),
         'desc': _descriptionController.text.trim(),
         'subject_id': _subjectIdController.text.trim(),
-        'due_date': _dueDate!.toIso8601String().split('T')[0], // Store only date
-        'id': userId, // Link assignment to user
+        'due_date': _dueDate!.toIso8601String().split('T')[0],
+        'id': userId,
         'priority': _selectedPriority,
-        'is_completed': widget.taskToEdit?.isCompleted ?? false, // Preserve completion status if editing
+        'is_completed': widget.taskToEdit?.isCompleted ?? false,
       };
 
       if (widget.taskToEdit == null) {
-        // Add new task
         await supabase.from('assignment').insert(taskData);
         if (mounted) {
           showSnackBar(context, 'Task added successfully!');
           Navigator.of(context).pop();
         }
       } else {
-        // Update existing task
         await supabase
             .from('assignment')
             .update(taskData)
@@ -136,14 +167,35 @@ class _AddTaskPageState extends State<AddTaskPage> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description (Optional)'),
+                decoration:
+                    const InputDecoration(labelText: 'Description (Optional)'),
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _subjectIdController,
-                decoration: const InputDecoration(labelText: 'Subject ID (e.g., CSC101, optional)'),
-              ),
+
+              _isLoadingSubjects
+                  ? const Center(child: CircularProgressIndicator())
+                  : DropdownButtonFormField<String>(
+                      value: _userSubjectIds.contains(_subjectIdController.text)
+                          ? _subjectIdController.text
+                          : null,
+                      decoration: const InputDecoration(
+                        labelText: 'Subject ID',
+                        prefixIcon: Icon(Icons.book_outlined),
+                      ),
+                      items: _userSubjectIds.map((id) {
+                        return DropdownMenuItem<String>(
+                          value: id,
+                          child: Text(id),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _subjectIdController.text = newValue ?? '';
+                        });
+                      },
+                    ),
+
               const SizedBox(height: 16),
               InkWell(
                 onTap: () => _selectDueDate(context),
@@ -156,10 +208,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                    fillColor:
+                        Theme.of(context).inputDecorationTheme.fillColor,
                   ),
                   child: Text(
-                    _dueDate == null ? 'Select Date' : DateFormat('MMM dd, yyyy').format(_dueDate!),
+                    _dueDate == null
+                        ? 'Select Date'
+                        : DateFormat('MMM dd, yyyy').format(_dueDate!),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -186,9 +241,17 @@ class _AddTaskPageState extends State<AddTaskPage> {
               const SizedBox(height: 24),
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton(
-                      onPressed: _saveTask,
-                      child: Text(widget.taskToEdit == null ? 'Add Task' : 'Update Task'),
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _saveTask,
+                          child: Text(widget.taskToEdit == null
+                              ? 'Add Task'
+                              : 'Update Task'),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
                     ),
             ],
           ),
@@ -198,7 +261,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 }
 
-// Extension for String capitalization
+// ✅ Capitalization extension
 extension StringExtension on String {
   String capitalize() {
     return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
