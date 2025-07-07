@@ -1,6 +1,7 @@
 // --- Home Page ---
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:skedule3/SubFabButton.dart';
 import 'package:skedule3/main.dart';
 
 class HomePage extends StatefulWidget {
@@ -10,14 +11,45 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   late Future<List<Class>> _todayClassesFuture;
   late Future<List<Assignment>> _upcomingTasksFuture;
+
+  // For the custom FAB animation
+  late AnimationController _animationController;
+  late Animation<double> _expandAnimation;
+  bool _isFabExpanded = false;
 
   @override
   void initState() {
     super.initState();
     _fetchData();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _toggleFabExpansion() {
+    setState(() {
+      _isFabExpanded = !_isFabExpanded;
+      if (_isFabExpanded) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+    });
   }
 
   Future<void> _fetchData() async {
@@ -141,6 +173,14 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).pushNamed('/add_task');
+              },
+            ),
+             ListTile(
+              leading: const Icon(Icons.library_books_outlined), // Icon for subject
+              title: const Text('Add Subject'), // New menu item for adding subject
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).pushNamed('/add_subject');
               },
             ),
             ListTile(
@@ -292,7 +332,7 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                                 Text(
-                                  'Due: ${DateFormat('MMM dd, yyyy').format(task.dueDate)}',
+                                  'Due: ${DateFormat('MMM dd, yyyy').format(task.dueDate)}', // Corrected format for year
                                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                         color: Colors.grey,
                                       ),
@@ -329,22 +369,66 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min, // Make column take minimum space
         children: [
-          FloatingActionButton(
-            heroTag: 'addClass',
-            onPressed: () {
-              Navigator.of(context).pushNamed('/add_edit_class');
-            },
-            child: const Icon(Icons.class_outlined),
+          // Sub-FABs, animated based on _isFabExpanded
+          AnimatedOpacity(
+            opacity: _isFabExpanded ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            child: IgnorePointer( // Prevent taps when not visible
+              ignoring: !_isFabExpanded,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SubFabButton(
+                    icon: Icons.class_outlined,
+                    label: 'Add Class',
+                    onTap: () {
+                      _toggleFabExpansion(); // Close FABs
+                      Navigator.of(context).pushNamed('/add_edit_class');
+                    },
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    foregroundColor: Colors.white,
+                  ),
+                  const SizedBox(height: 10),
+                  SubFabButton(
+                    icon: Icons.library_books_outlined,
+                    label: 'Add Subject',
+                    onTap: () {
+                      _toggleFabExpansion(); // Close FABs
+                      Navigator.of(context).pushNamed('/add_subject');
+                    },
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    foregroundColor: Colors.white,
+                  ),
+                  const SizedBox(height: 10),
+                  SubFabButton(
+                    icon: Icons.assignment_add,
+                    label: 'Add Task',
+                    onTap: () {
+                      _toggleFabExpansion(); // Close FABs
+                      Navigator.of(context).pushNamed('/add_task');
+                    },
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    foregroundColor: Colors.white,
+                  ),
+                  const SizedBox(height: 10), // Space between last sub-FAB and main FAB
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
+          // Main FAB
           FloatingActionButton(
-            heroTag: 'addTask',
-            onPressed: () {
-              Navigator.of(context).pushNamed('/add_task');
-            },
-            child: const Icon(Icons.assignment_add),
+            onPressed: _toggleFabExpansion,
+            child: AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle: _animationController.value * 0.75 * 3.1415926535, // Rotate 135 degrees (0.75 * pi)
+                  child: Icon(_isFabExpanded ? Icons.close : Icons.add),
+                );
+              },
+            ),
           ),
         ],
       ),

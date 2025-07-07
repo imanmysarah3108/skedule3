@@ -1,5 +1,6 @@
 // main.dart
 import 'package:flutter/material.dart';
+import 'package:skedule3/add_subject.dart';
 import 'package:skedule3/add_task.dart';
 import 'package:skedule3/edit_class.dart';
 import 'package:skedule3/homepage.dart';
@@ -164,6 +165,7 @@ void initState() {
         '/add_edit_class': (context) => const AddEditClassPage(),
         '/add_task': (context) => const AddTaskPage(),
         '/profile': (context) => const ProfilePage(),
+        '/add_subject': (context) => const AddSubjectPage(),
       },
     );
   }
