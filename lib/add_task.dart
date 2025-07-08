@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:skedule3/main.dart';
 
 class AddTaskPage extends StatefulWidget {
-  final Assignment? taskToEdit; 
+  final Assignment? taskToEdit;
   const AddTaskPage({super.key, this.taskToEdit});
 
   @override
@@ -14,14 +14,15 @@ class _AddTaskPageState extends State<AddTaskPage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _subjectIdController = TextEditingController(); 
+  String? _selectedSubjectId;
+
   DateTime? _dueDate;
-  String _selectedPriority = 'medium'; 
+  String _selectedPriority = 'medium';
   bool _isLoading = false;
 
-  
+  List<Map<String, String>> _userSubjects = [];
   bool _isLoadingSubjects = true;
-  List<String> _userSubjectIds = [];
+  
 
   final List<String> _priorityLevels = ['high', 'medium', 'low'];
 
@@ -31,30 +32,33 @@ class _AddTaskPageState extends State<AddTaskPage> {
     if (widget.taskToEdit != null) {
       _titleController.text = widget.taskToEdit!.assignmentTitle;
       _descriptionController.text = widget.taskToEdit!.desc;
-      _subjectIdController.text = widget.taskToEdit!.subjectId;
+      _selectedSubjectId = widget.taskToEdit!.subjectId;
       _dueDate = widget.taskToEdit!.dueDate;
       _selectedPriority = widget.taskToEdit!.priority;
     }
-    _loadSubjects(); 
+    _loadSubjects();
   }
 
-  // ✅ Load user-specific subject IDs
   Future<void> _loadSubjects() async {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) return;
 
     try {
-      final response = await supabase
-          .from('subject')
-          .select('subject_id')
-          .eq('id', userId);
+final response = await supabase
+    .from('subject')
+    .select('subject_id, subject_title')
+    .order('subject_title');
 
-      setState(() {
-        _userSubjectIds = (response as List)
-            .map((item) => item['subject_id'].toString())
-            .toList();
-        _isLoadingSubjects = false;
-      });
+setState(() {
+  _userSubjects = (response as List)
+      .map((item) => {
+            'subject_id': item['subject_id'].toString(),
+            'subject_title': item['subject_title'].toString(),
+          })
+      .toList();
+  _isLoadingSubjects = false;
+});
+
     } catch (e) {
       if (mounted) {
         showSnackBar(context, 'Failed to load subjects: $e', isError: true);
@@ -80,24 +84,19 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
   Future<void> _saveTask() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
+
     if (_dueDate == null) {
       showSnackBar(context, 'Please select a due date.', isError: true);
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
       showSnackBar(context, 'User not logged in.', isError: true);
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
       return;
     }
 
@@ -105,7 +104,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       final taskData = {
         'assignment_title': _titleController.text.trim(),
         'desc': _descriptionController.text.trim(),
-        'subject_id': _subjectIdController.text.trim(),
+        'subject_id': _selectedSubjectId!, 
         'due_date': _dueDate!.toIso8601String().split('T')[0],
         'id': userId,
         'priority': _selectedPriority,
@@ -133,11 +132,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
         showSnackBar(context, 'Failed to save task: $e', isError: true);
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -157,44 +152,40 @@ class _AddTaskPageState extends State<AddTaskPage> {
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Task Title'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter task title';
-                  }
-                  return null;
-                },
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Enter task title' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
-                decoration:
-                    const InputDecoration(labelText: 'Description (Optional)'),
+                decoration: const InputDecoration(labelText: 'Description (Optional)'),
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
 
-              _isLoadingSubjects
-                  ? const Center(child: CircularProgressIndicator())
-                  : DropdownButtonFormField<String>(
-                      value: _userSubjectIds.contains(_subjectIdController.text)
-                          ? _subjectIdController.text
-                          : null,
-                      decoration: const InputDecoration(
-                        labelText: 'Subject ID',
-                        prefixIcon: Icon(Icons.book_outlined),
-                      ),
-                      items: _userSubjectIds.map((id) {
-                        return DropdownMenuItem<String>(
-                          value: id,
-                          child: Text(id),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _subjectIdController.text = newValue ?? '';
-                        });
-                      },
-                    ),
+              // Subject Dropdown (updated)
+            _isLoadingSubjects
+  ? const Center(child: CircularProgressIndicator())
+  : _userSubjects.isEmpty
+      ? const Text('No subjects available.')
+      : DropdownButtonFormField<String>(
+          value: _selectedSubjectId,
+          decoration: const InputDecoration(
+            labelText: 'Subject ID',
+            prefixIcon: Icon(Icons.book_outlined),
+          ),
+          hint: const Text('Choose a subject'),
+          items: _userSubjects.map((subject) {
+            final id = subject['subject_id'] ?? '';
+            return DropdownMenuItem<String>(
+              value: id,
+              child: Text(id), // Show only the subject ID
+            );
+          }).toList(),
+          onChanged: (value) => setState(() => _selectedSubjectId = value),
+          validator: (value) =>
+              value == null || value.isEmpty ? 'Please select a subject' : null,
+        ),
 
               const SizedBox(height: 16),
               InkWell(
@@ -261,7 +252,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 }
 
-// ✅ Capitalization extension
 extension StringExtension on String {
   String capitalize() {
     return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";

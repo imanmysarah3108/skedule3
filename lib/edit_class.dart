@@ -1,9 +1,9 @@
-// --- Add/Edit Class Screen ---
 import 'package:flutter/material.dart';
 import 'package:skedule3/main.dart';
 
 class AddEditClassPage extends StatefulWidget {
-  final Class? classToEdit; // Optional, for editing existing class
+  final Class? classToEdit;
+
   const AddEditClassPage({super.key, this.classToEdit});
 
   @override
@@ -12,43 +12,35 @@ class AddEditClassPage extends StatefulWidget {
 
 class _AddEditClassPageState extends State<AddEditClassPage> {
   final _formKey = GlobalKey<FormState>();
-  final _subjectIdController = TextEditingController();
   final _classTypeController = TextEditingController();
   final _buildingController = TextEditingController();
   final _roomController = TextEditingController();
   final _lecturerController = TextEditingController();
 
+  List<Map<String, dynamic>> _subjects = [];
+  String? _selectedSubjectId;
+
   String? _selectedDay;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
-  String _selectedColor = '#42A5F5'; // Default blue color
+  String _selectedColor = '#42A5F5';
   bool _setReminder = true;
   bool _isLoading = false;
 
   final List<String> _daysOfWeek = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday'
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
   ];
 
   final List<String> _availableColors = [
-    '#42A5F5', // Blue
-    '#66BB6A', // Green
-    '#FFA726', // Orange
-    '#EF5350', // Red
-    '#AB47BC', // Purple
-    '#26A69A', // Teal
+    '#42A5F5', '#66BB6A', '#FFA726', '#EF5350', '#AB47BC', '#26A69A'
   ];
 
   @override
   void initState() {
     super.initState();
+    _loadSubjects();
     if (widget.classToEdit != null) {
-      _subjectIdController.text = widget.classToEdit!.subjectId;
+      _selectedSubjectId = widget.classToEdit!.subjectId;
       _classTypeController.text = widget.classToEdit!.classType;
       _buildingController.text = widget.classToEdit!.building;
       _roomController.text = widget.classToEdit!.room;
@@ -61,12 +53,24 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
     }
   }
 
+  Future<void> _loadSubjects() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final response = await supabase
+        .from('subject')
+        .select()
+        .order('subject_title');
+
+    setState(() {
+      _subjects = List<Map<String, dynamic>>.from(response);
+    });
+  }
+
   Future<void> _selectTime(BuildContext context, bool isStartTime) async {
-    final TimeOfDay? picked = await showTimePicker(
+    final picked = await showTimePicker(
       context: context,
-      initialTime: isStartTime
-          ? (_startTime ?? TimeOfDay.now())
-          : (_endTime ?? TimeOfDay.now()),
+      initialTime: isStartTime ? (_startTime ?? TimeOfDay.now()) : (_endTime ?? TimeOfDay.now()),
     );
     if (picked != null) {
       setState(() {
@@ -80,68 +84,49 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
   }
 
   Future<void> _saveClass() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-    if (_selectedDay == null || _startTime == null || _endTime == null) {
-      showSnackBar(context, 'Please select day, start time, and end time.', isError: true);
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedSubjectId == null || _selectedDay == null || _startTime == null || _endTime == null) {
+      showSnackBar(context, 'Please complete all fields.', isError: true);
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
       showSnackBar(context, 'User not logged in.', isError: true);
-      setState(() { _isLoading = false; });
+      setState(() => _isLoading = false);
       return;
     }
 
-    try {
-      final classData = {
-        'subject_id': _subjectIdController.text.trim(),
-        'class_type': _classTypeController.text.trim(),
-        'building': _buildingController.text.trim(),
-        'room': _roomController.text.trim(),
-        'lecturer': _lecturerController.text.trim(),
-        'day': _selectedDay,
-        'start_time': '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}:00',
-        'end_time': '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}:00',
-        'color_hex': _selectedColor,
-        'reminder': _setReminder,
-        'id': userId, // Link class to user
-      };
+    final classData = {
+      'subject_id': _selectedSubjectId,
+      'class_type': _classTypeController.text.trim(),
+      'building': _buildingController.text.trim(),
+      'room': _roomController.text.trim(),
+      'lecturer': _lecturerController.text.trim(),
+      'day': _selectedDay,
+      'start_time': '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}:00',
+      'end_time': '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}:00',
+      'color_hex': _selectedColor,
+      'reminder': _setReminder,
+      'id': userId,
+    };
 
+    try {
       if (widget.classToEdit == null) {
-        // Add new class
         await supabase.from('class').insert(classData);
-        if (mounted) {
-          showSnackBar(context, 'Class added successfully!');
-          Navigator.of(context).pop();
-        }
+        showSnackBar(context, 'Class added successfully!');
       } else {
-        // Update existing class
-        await supabase
-            .from('class')
-            .update(classData)
-            .eq('class_id', widget.classToEdit!.classId);
-        if (mounted) {
-          showSnackBar(context, 'Class updated successfully!');
-          Navigator.of(context).pop();
-        }
+        await supabase.from('class').update(classData).eq('class_id', widget.classToEdit!.classId);
+        showSnackBar(context, 'Class updated successfully!');
       }
+      if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) {
-        showSnackBar(context, 'Failed to save class: $e', isError: true);
-      }
+      showSnackBar(context, 'Failed to save class: $e', isError: true);
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -149,207 +134,178 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.classToEdit == null ? 'Add New Class' : 'Edit Class'),
+        title: Text(widget.classToEdit == null ? 'Add Class' : 'Edit Class'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _subjectIdController,
-                decoration: const InputDecoration(labelText: 'Subject ID (e.g., CSC101)'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter subject ID';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _classTypeController,
-                decoration: const InputDecoration(labelText: 'Class Type (e.g., Lecture, Tutorial)'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter class type';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _buildingController,
-                decoration: const InputDecoration(labelText: 'Building'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter building';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _roomController,
-                decoration: const InputDecoration(labelText: 'Room'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter room';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _lecturerController,
-                decoration: const InputDecoration(labelText: 'Lecturer Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter lecturer name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedDay,
-                decoration: const InputDecoration(
-                  labelText: 'Day of Week',
-                  prefixIcon: Icon(Icons.calendar_today_outlined),
-                ),
-                items: _daysOfWeek.map((String day) {
-                  return DropdownMenuItem<String>(
-                    value: day,
-                    child: Text(day),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedDay = newValue;
-                  });
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select a day';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              Row(
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              top: 24,
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
                 children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => _selectTime(context, true),
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: 'Start Time',
-                          prefixIcon: const Icon(Icons.access_time_outlined),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-                        ),
-                        child: Text(
-                          _startTime == null ? 'Select Time' : _startTime!.format(context),
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
+                  DropdownButtonFormField<String>(
+                    value: _selectedSubjectId,
+                    decoration: const InputDecoration(
+                      labelText: 'Subject',
+                      prefixIcon: Icon(Icons.book_outlined),
+                      isDense: true,
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => _selectTime(context, false),
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: 'End Time',
-                          prefixIcon: const Icon(Icons.access_time_outlined),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-                        ),
-                        child: Text(
-                          _endTime == null ? 'Select Time' : _endTime!.format(context),
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Text('Class Color: ', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Wrap(
-                      spacing: 8.0,
-                      runSpacing: 8.0,
-                      children: _availableColors.map((hexColor) {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedColor = hexColor;
-                            });
-                          },
-                          child: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: Color(int.parse(hexColor.replaceAll('#', '0xFF'))),
-                              shape: BoxShape.circle,
-                              border: _selectedColor == hexColor
-                                  ? Border.all(color: Theme.of(context).colorScheme.secondary, width: 3)
-                                  : null,
+                    items: _subjects.map((subject) {
+                      return DropdownMenuItem<String>(
+                        value: subject['subject_id'],
+                        child: Row(
+                          children: [
+                            Expanded( 
+                              child: Text(
+                                '${subject['subject_id']} - ${subject['subject_title']}',
+                                overflow: TextOverflow.ellipsis, 
+                                softWrap: false, 
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) => setState(() => _selectedSubjectId = value),
+                    validator: (value) => value == null ? 'Please select a subject' : null,
+                  ),
+                  const SizedBox(height: 16), 
+
+                  TextFormField(
+                    controller: _classTypeController,
+                    decoration: const InputDecoration(
+                      labelText: 'Class Type - Lecture, Lab, Tutorial',
+                      prefixIcon: Icon(Icons.type_specimen_outlined),
+                      isDense: true,
+                    ),
+                    validator: (value) => value!.isEmpty ? 'Enter class type' : null,
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextFormField(
+                    controller: _buildingController,
+                    decoration: const InputDecoration(
+                      labelText: 'Building',
+                      prefixIcon: Icon(Icons.location_city_outlined),
+                      isDense: true,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Set Reminder:', style: Theme.of(context).textTheme.titleMedium),
-                  Switch(
-                    value: _setReminder,
-                    onChanged: (bool value) {
-                      setState(() {
-                        _setReminder = value;
-                      });
-                    },
+                  const SizedBox(height: 16),
+
+                  TextFormField(
+                    controller: _roomController,
+                    decoration: const InputDecoration(
+                      labelText: 'Room',
+                      prefixIcon: Icon(Icons.door_front_door_outlined),
+                      isDense: true,
+                    ),
                   ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch, 
-                children: [
+                  const SizedBox(height: 16),
+
+                  TextFormField(
+                    controller: _lecturerController,
+                    decoration: const InputDecoration(
+                      labelText: 'Lecturer',
+                      prefixIcon: Icon(Icons.person_outline),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  DropdownButtonFormField<String>(
+                    value: _selectedDay,
+                    decoration: const InputDecoration(
+                      labelText: 'Day',
+                      prefixIcon: Icon(Icons.calendar_today_outlined),
+                      isDense: true,
+                    ),
+                    items: _daysOfWeek.map((day) {
+                      return DropdownMenuItem(value: day, child: Text(day));
+                    }).toList(),
+                    onChanged: (value) => setState(() => _selectedDay = value),
+                    validator: (value) => value == null ? 'Please select a day' : null,
+                  ),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => _selectTime(context, true),
+                          child: Text(
+                            _startTime == null
+                                ? 'Select Start Time'
+                                : 'Start: ${_startTime!.format(context)}',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => _selectTime(context, false),
+                          child: Text(
+                            _endTime == null
+                                ? 'Select End Time'
+                                : 'End: ${_endTime!.format(context)}',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: _availableColors.map((colorHex) {
+                      final isSelected = _selectedColor == colorHex;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedColor = colorHex),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: isSelected ? Colors.black : Colors.transparent, width: 2),
+                          ),
+                          child: CircleAvatar(
+                            backgroundColor: Color(int.parse(colorHex.replaceFirst('#', '0xff'))),
+                            radius: 14,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: _setReminder,
+                    onChanged: (value) => setState(() => _setReminder = value),
+                    title: const Text('Set Reminder'),
+                  ),
                   const SizedBox(height: 24),
+
                   _isLoading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const CircularProgressIndicator()
                       : SizedBox(
-                          height: 48, 
+                          width: double.infinity,
+                          height: 48,
                           child: ElevatedButton(
                             onPressed: _saveClass,
                             child: Text(widget.classToEdit == null ? 'Add Class' : 'Update Class'),
                           ),
                         ),
-                    const SizedBox(height: 24),
+                  const SizedBox(height: 24),
                 ],
-              ), 
-            ],
+              ),
+            ),
           ),
         ),
       ),
