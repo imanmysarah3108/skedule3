@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skedule3/SubFabButton.dart';
-import 'package:skedule3/main.dart';
+import 'package:skedule3/main.dart'; 
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -67,7 +67,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final sevenDaysLater = now.add(const Duration(days: 7));
     _upcomingTasksFuture = supabase
         .from('assignment')
-        .select()
+        .select('*, subject_id') 
         .eq('id', userId)
         .eq('is_completed', false)
         .gte('due_date', DateFormat('yyyy-MM-dd').format(now))
@@ -179,7 +179,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               animation: _animationController,
               builder: (_, child) {
                 return Transform.rotate(
-                  angle: _animationController.value * 0.75 * 3.1416, // Rotate "+" to "x"
+                  angle: _animationController.value * 0.75 * 3.1416,
                   child: child,
                 );
               },
@@ -388,12 +388,26 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         onChanged: (val) => _toggleTaskCompletion(task),
                         activeColor: Colors.green,
                       ),
-                      title: Text(
-                        task.assignmentTitle,
-                        style: TextStyle(
-                          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      title: Column( 
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                            if (task.subjectId.isNotEmpty) 
+                            Text(
+                              task.subjectId,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: const Color.fromARGB(255, 255, 236, 189),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15, 
+                                ),
+                            ),
+                          Text( 
+                            task.assignmentTitle,
+                            style: TextStyle(
+                              decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,7 +419,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             ),
                           ),
                           Text(
-                            'Due: ${DateFormat('MMM dd, yyyy').format(task.dueDate)}',
+                            'Due: ${DateFormat('MMM dd, yyyy').format(task.dueDate)}', 
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
                           ),
                         ],
