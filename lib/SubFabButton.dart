@@ -6,24 +6,24 @@ class SubFabButton extends StatelessWidget {
   final VoidCallback onTap;
   final Color backgroundColor;
   final Color foregroundColor;
-  final bool showLabel; // New property to control label visibility
+  final bool showLabel; 
 
   const SubFabButton({
-    Key? key,
+    super.key,
     required this.icon,
     required this.label,
     required this.onTap,
     required this.backgroundColor,
     required this.foregroundColor,
-    this.showLabel = true, // Default to true
-  }) : super(key: key);
+    this.showLabel = true, 
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (showLabel) // Conditionally render label
+        if (showLabel) 
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             margin: const EdgeInsets.only(right: 8),
@@ -47,8 +47,8 @@ class SubFabButton extends StatelessWidget {
             ),
           ),
         FloatingActionButton(
-          heroTag: label, // Unique tag for each FAB
-          mini: true, // Make it smaller
+          heroTag: label, 
+          mini: true, 
           onPressed: onTap,
           backgroundColor: backgroundColor,
           foregroundColor: foregroundColor,

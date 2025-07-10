@@ -253,7 +253,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
           ListTile(
             leading: const Icon(Icons.library_books_outlined),
-            title: const Text('Add Subject'),
+            title: const Text('Add/ Edit Subject'),
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).pushNamed('/add_subject');

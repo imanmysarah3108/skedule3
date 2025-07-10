@@ -1,7 +1,5 @@
-
 import 'package:flutter/material.dart';
 import 'package:skedule3/main.dart'; 
-
 
 class AddSubjectPage extends StatefulWidget {
   const AddSubjectPage({super.key});
@@ -11,29 +9,47 @@ class AddSubjectPage extends StatefulWidget {
 }
 
 class _AddSubjectPageState extends State<AddSubjectPage> {
-  
   final _formKey = GlobalKey<FormState>();
-
-  
   final _subjectIdController = TextEditingController();
   final _subjectTitleController = TextEditingController();
 
-  
   bool _isLoading = false;
+  List<Map<String, dynamic>> _subjects = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSubjects();
+  }
 
   @override
   void dispose() {
-   
     _subjectIdController.dispose();
     _subjectTitleController.dispose();
     super.dispose();
   }
 
-  
-  Future<void> _submitSubject() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
+  Future<void> _fetchSubjects() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      final response = await supabase
+          .from('subject')
+          .select()
+          .order('subject_title', ascending: true);
+
+      setState(() {
+        _subjects = List<Map<String, dynamic>>.from(response);
+      });
+    } catch (e) {
+      showSnackBar(context, 'Error loading subjects: $e', isError: true);
     }
+  }
+
+  Future<void> _submitSubject() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() {
       _isLoading = true;
     });
@@ -41,17 +57,18 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
     try {
       final subjectId = _subjectIdController.text.trim();
       final subjectTitle = _subjectTitleController.text.trim();
-      
+
       await supabase.from('subject').insert({
         'subject_id': subjectId,
         'subject_title': subjectTitle,
         'id': supabase.auth.currentUser?.id,
-
       });
 
       if (mounted) {
         showSnackBar(context, 'Subject added successfully!');
-        Navigator.of(context).pop();
+        _subjectIdController.clear();
+        _subjectTitleController.clear();
+        await _fetchSubjects();
       }
     } catch (e) {
       if (mounted) {
@@ -72,6 +89,16 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
     }
   }
 
+  Future<void> _deleteSubject(String subjectId) async {
+    try {
+      await supabase.from('subject').delete().eq('subject_id', subjectId);
+      showSnackBar(context, 'Subject deleted');
+      await _fetchSubjects();
+    } catch (e) {
+      showSnackBar(context, 'Failed to delete subject: $e', isError: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,7 +110,7 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch, 
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextFormField(
                 controller: _subjectIdController,
@@ -92,16 +119,16 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  prefixIcon: const Icon(Icons.vpn_key_outlined), 
+                  prefixIcon: const Icon(Icons.vpn_key_outlined),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a Subject ID';
                   }
-                  return null; 
+                  return null;
                 },
               ),
-              const SizedBox(height: 16), 
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _subjectTitleController,
                 decoration: InputDecoration(
@@ -109,18 +136,18 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  prefixIcon: const Icon(Icons.title), 
+                  prefixIcon: const Icon(Icons.title),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a Subject Title';
                   }
-                  return null; 
+                  return null;
                 },
               ),
-              const SizedBox(height: 32), 
+              const SizedBox(height: 32),
               ElevatedButton.icon(
-                onPressed: _isLoading ? null : _submitSubject, 
+                onPressed: _isLoading ? null : _submitSubject,
                 icon: _isLoading
                     ? const SizedBox(
                         width: 20,
@@ -130,15 +157,35 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Icon(Icons.save), 
-                label: Text(_isLoading ? 'Adding Subject...' : 'Add Subject'), 
+                    : const Icon(Icons.save),
+                label: Text(_isLoading ? 'Adding Subject...' : 'Add Subject'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8), 
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
+              Text(
+                'Your Subjects:',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              if (_subjects.isEmpty)
+                const Text('No subjects added yet.')
+              else
+                ..._subjects.map((subject) => Card(
+                      child: ListTile(
+                        title: Text(subject['subject_title']),
+                        subtitle: Text(subject['subject_id']),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () =>
+                              _deleteSubject(subject['subject_id']),
+                        ),
+                      ),
+                    )),
             ],
           ),
         ),
