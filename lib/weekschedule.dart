@@ -38,7 +38,7 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
           .from('class')
           .select()
           .eq('day', day)
-          .eq('id', userId) // Assuming user_id column
+          .eq('id', userId) 
           .order('start_time', ascending: true)
           .then((data) => data.map((json) => Class.fromJson(json)).toList());
     });

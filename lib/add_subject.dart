@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:skedule3/main.dart'; 
+import 'package:skedule3/main.dart'; // Ensure this has the Supabase instance and showSnackBar method
 
 class AddSubjectPage extends StatefulWidget {
   const AddSubjectPage({super.key});
@@ -37,6 +37,7 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
       final response = await supabase
           .from('subject')
           .select()
+          .eq('userId', userId)
           .order('subject_title', ascending: true);
 
       setState(() {
@@ -57,11 +58,12 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
     try {
       final subjectId = _subjectIdController.text.trim();
       final subjectTitle = _subjectTitleController.text.trim();
+      final userId = supabase.auth.currentUser?.id;
 
       await supabase.from('subject').insert({
         'subject_id': subjectId,
         'subject_title': subjectTitle,
-        'id': supabase.auth.currentUser?.id,
+        'userId': userId,
       });
 
       if (mounted) {
