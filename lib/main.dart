@@ -1,4 +1,3 @@
-// main.dart
 import 'package:flutter/material.dart';
 import 'package:skedule3/add_subject.dart';
 import 'package:skedule3/add_task.dart';
@@ -10,16 +9,12 @@ import 'package:skedule3/signup.dart';
 import 'package:skedule3/weekschedule.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
-// For date formatting
 
-// --- Supabase Configuration ---
-// Replace with your actual Supabase URL and Anon Key
 const SUPABASE_URL = 'https://ivhpkpjdgirodyjvypwd.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aHBrcGpkZ2lyb2R5anZ5cHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NDU1NzMsImV4cCI6MjA2NjIyMTU3M30.Tev4ouZoxt8XpWsOn_PYDx0mtLLoJsfqPRgZoEDdVYY"';
+const SUPABASE_ANON_KEY = 'ey...VYY'; // Truncated for brevity
 
-// --- Theme Provider for Dark/Light Mode ---
 class ThemeProvider extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.system; // Default to system theme
+  ThemeMode _themeMode = ThemeMode.system;
 
   ThemeMode get themeMode => _themeMode;
 
@@ -36,11 +31,9 @@ class ThemeProvider extends ChangeNotifier {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Supabase
   await Supabase.initialize(
-    url: 'https://ivhpkpjdgirodyjvypwd.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aHBrcGpkZ2lyb2R5anZ5cHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NDU1NzMsImV4cCI6MjA2NjIyMTU3M30.Tev4ouZoxt8XpWsOn_PYDx0mtLLoJsfqPRgZoEDdVYY',
+    url: SUPABASE_URL,
+    anonKey: SUPABASE_ANON_KEY,
   );
 
   runApp(
@@ -60,19 +53,19 @@ class SkeduleApp extends StatefulWidget {
 
 class _SkeduleAppState extends State<SkeduleApp> {
   @override
-void initState() {
-  super.initState();
-  Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-    final event = data.event;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (event == AuthChangeEvent.signedIn) {
-        Navigator.of(context).pushReplacementNamed('/home');
-      } else if (event == AuthChangeEvent.signedOut) {
-        Navigator.of(context).pushReplacementNamed('/login');
-      }
+  void initState() {
+    super.initState();
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final event = data.event;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (event == AuthChangeEvent.signedIn) {
+          Navigator.of(context).pushReplacementNamed('/home');
+        } else if (event == AuthChangeEvent.signedOut) {
+          Navigator.of(context).pushReplacementNamed('/login');
+        }
+      });
     });
-  });
-}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +79,7 @@ void initState() {
         brightness: Brightness.light,
         primarySwatch: Colors.blueGrey,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        fontFamily: 'Inter', // Assuming Inter font is available or imported
+        fontFamily: 'Inter',
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black87,
@@ -166,13 +159,39 @@ void initState() {
         '/add_task': (context) => const AddTaskPage(),
         '/profile': (context) => const ProfilePage(),
         '/add_subject': (context) => const AddSubjectPage(),
+        '/privacy-policy': (context) => const PrivacyPolicyPage(), // ✅ Added here
       },
     );
   }
 }
 
-// --- Supabase Client Instance ---
 final supabase = Supabase.instance.client;
+
+// --- PrivacyPolicyPage Widget ---
+class PrivacyPolicyPage extends StatelessWidget {
+  const PrivacyPolicyPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Terms & Privacy')),
+      body: const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Text(
+            'This is the privacy policy and terms of use for the Skedule app.\n\n'
+            '1. Your data is stored securely using Supabase.\n'
+            '2. We don’t share your data with third parties.\n'
+            '3. Use this app responsibly for academic scheduling purposes.\n'
+            '4. By using Skedule, you agree to these terms.\n\n'
+            'Please reach out to skedule@yahoo.com if you have any questions.',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 // --- Data Models (Based on your Supabase Schema) ---
 

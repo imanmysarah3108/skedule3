@@ -18,7 +18,7 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
   final _roomController = TextEditingController();
   final _lecturerController = TextEditingController();
 
-  List<Map<String, dynamic>> _subjects = [];
+  List<Subject> _subjects = []; // Changed to List<Subject>
   String? _selectedSubjectId;
 
   String? _selectedDay;
@@ -69,11 +69,12 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
       final response = await supabase
           .from('subject')
           .select()
+          .eq('userId', userId) // Filter by the current user's ID
           .order('subject_title');
 
       setState(() {
-        _subjects = List<Map<String, dynamic>>.from(response);
-        log('AddEditClassPage: Loaded ${_subjects.length} subjects.');
+        _subjects = (response as List).map((json) => Subject.fromJson(json)).toList(); // Convert to List<Subject>
+        log('AddEditClassPage: Loaded ${_subjects.length} subjects for user $userId.');
       });
     } catch (e) {
       log('AddEditClassPage: Error loading subjects: $e', error: e);
@@ -140,7 +141,7 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
       'end_time': '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}:00',
       'color_hex': _selectedColor,
       'reminder': _setReminder,
-      'id': userId,
+      'id': userId, // Ensure 'id' (user_id) is included
     };
 
     try {
@@ -204,17 +205,11 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                     ),
                     items: _subjects.map((subject) {
                       return DropdownMenuItem<String>(
-                        value: subject['subject_id'],
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '${subject['subject_id']} - ${subject['subject_title']}',
-                                overflow: TextOverflow.ellipsis,
-                                softWrap: false,
-                              ),
-                            ),
-                          ],
+                        value: subject.subjectId, // Use subject.subjectId as value
+                        child: Text(
+                          '${subject.subjectId} - ${subject.subjectTitle}', // Display both ID and title
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: false,
                         ),
                       );
                     }).toList(),
