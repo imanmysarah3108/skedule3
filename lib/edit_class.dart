@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skedule3/main.dart';
+import 'dart:developer'; // Import for log function
 
 class AddEditClassPage extends StatefulWidget {
   final Class? classToEdit;
@@ -38,8 +39,10 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
   @override
   void initState() {
     super.initState();
+    log('AddEditClassPage: initState called.');
     _loadSubjects();
     if (widget.classToEdit != null) {
+      log('AddEditClassPage: Editing existing class: ${widget.classToEdit!.subjectId}');
       _selectedSubjectId = widget.classToEdit!.subjectId;
       _classTypeController.text = widget.classToEdit!.classType;
       _buildingController.text = widget.classToEdit!.building;
@@ -50,21 +53,31 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
       _endTime = widget.classToEdit!.endTime;
       _selectedColor = widget.classToEdit!.colorHex;
       _setReminder = widget.classToEdit!.reminder;
+    } else {
+      log('AddEditClassPage: Adding new class.');
     }
   }
 
   Future<void> _loadSubjects() async {
     final userId = supabase.auth.currentUser?.id;
-    if (userId == null) return;
+    if (userId == null) {
+      log('AddEditClassPage: No user ID, cannot load subjects.');
+      return;
+    }
 
-    final response = await supabase
-        .from('subject')
-        .select()
-        .order('subject_title');
+    try {
+      final response = await supabase
+          .from('subject')
+          .select()
+          .order('subject_title');
 
-    setState(() {
-      _subjects = List<Map<String, dynamic>>.from(response);
-    });
+      setState(() {
+        _subjects = List<Map<String, dynamic>>.from(response);
+        log('AddEditClassPage: Loaded ${_subjects.length} subjects.');
+      });
+    } catch (e) {
+      log('AddEditClassPage: Error loading subjects: $e', error: e);
+    }
   }
 
   Future<void> _selectTime(BuildContext context, bool isStartTime) async {
@@ -79,24 +92,40 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
         } else {
           _endTime = picked;
         }
+        log('AddEditClassPage: Time updated. Start: $_startTime, End: $_endTime');
       });
     }
   }
 
+  void showSnackBar(BuildContext context, String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
   Future<void> _saveClass() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      log('AddEditClassPage: Form validation failed.');
+      return;
+    }
 
     if (_selectedSubjectId == null || _selectedDay == null || _startTime == null || _endTime == null) {
       showSnackBar(context, 'Please complete all fields.', isError: true);
+      log('AddEditClassPage: Missing required fields.');
       return;
     }
 
     setState(() => _isLoading = true);
+    log('AddEditClassPage: _saveClass started, isLoading = true.');
 
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
       showSnackBar(context, 'User not logged in.', isError: true);
       setState(() => _isLoading = false);
+      log('AddEditClassPage: User not logged in, cannot save.');
       return;
     }
 
@@ -116,22 +145,38 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
 
     try {
       if (widget.classToEdit == null) {
+        // Add new class
         await supabase.from('class').insert(classData);
         showSnackBar(context, 'Class added successfully!');
+        log('AddEditClassPage: Class added successfully.');
       } else {
-        await supabase.from('class').update(classData).eq('class_id', widget.classToEdit!.classId);
+        // Update existing class
+        // IMPORTANT: Ensure 'class_id' is the primary key for updates
+        await supabase
+            .from('class')
+            .update(classData)
+            .eq('class_id', widget.classToEdit!.classId); // Use classId for update
         showSnackBar(context, 'Class updated successfully!');
+        log('AddEditClassPage: Class updated successfully for class_id: ${widget.classToEdit!.classId}');
       }
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        log('AddEditClassPage: Popping with true result.');
+        Navigator.of(context).pop(true); // Pop with 'true' on success
+      }
     } catch (e) {
       showSnackBar(context, 'Failed to save class: $e', isError: true);
+      log('AddEditClassPage: Failed to save class: $e', error: e);
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        log('AddEditClassPage: _saveClass finished, isLoading = false.');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    log('AddEditClassPage: build called.');
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.classToEdit == null ? 'Add Class' : 'Edit Class'),
@@ -162,11 +207,11 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                         value: subject['subject_id'],
                         child: Row(
                           children: [
-                            Expanded( 
+                            Expanded(
                               child: Text(
                                 '${subject['subject_id']} - ${subject['subject_title']}',
-                                overflow: TextOverflow.ellipsis, 
-                                softWrap: false, 
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: false,
                               ),
                             ),
                           ],
@@ -176,7 +221,7 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                     onChanged: (value) => setState(() => _selectedSubjectId = value),
                     validator: (value) => value == null ? 'Please select a subject' : null,
                   ),
-                  const SizedBox(height: 16), 
+                  const SizedBox(height: 16),
 
                   TextFormField(
                     controller: _classTypeController,
