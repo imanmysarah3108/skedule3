@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skedule3/SubFabButton.dart';
-import 'package:skedule3/main.dart'; 
+import 'package:skedule3/main.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -67,7 +67,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final sevenDaysLater = now.add(const Duration(days: 7));
     _upcomingTasksFuture = supabase
         .from('assignment')
-        .select('*, subject_id') 
+        .select('*, subject_id')
         .eq('id', userId)
         .eq('is_completed', false)
         .gte('due_date', DateFormat('yyyy-MM-dd').format(now))
@@ -99,7 +99,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Skedule - Today'),
+        title: const Text('Skedule  🗓️'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline),
@@ -236,6 +236,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             },
           ),
           ListTile(
+            leading: const Icon(Icons.library_books_outlined),
+            title: const Text('Add/ Edit Subject'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).pushNamed('/add_subject');
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.add_box_outlined),
             title: const Text('Add/Edit Class'),
             onTap: () {
@@ -249,14 +257,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).pushNamed('/add_task');
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.library_books_outlined),
-            title: const Text('Add/ Edit Subject'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.of(context).pushNamed('/add_subject');
             },
           ),
           ListTile(
@@ -388,19 +388,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         onChanged: (val) => _toggleTaskCompletion(task),
                         activeColor: Colors.green,
                       ),
-                      title: Column( 
+                      title: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                            if (task.subjectId.isNotEmpty) 
+                          if (task.subjectId.isNotEmpty)
                             Text(
                               task.subjectId,
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: const Color.fromARGB(255, 255, 236, 189),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15, 
-                                ),
+                                    color: const Color.fromARGB(255, 255, 236, 189),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
                             ),
-                          Text( 
+                          Text(
                             task.assignmentTitle,
                             style: TextStyle(
                               decoration: task.isCompleted ? TextDecoration.lineThrough : null,
@@ -419,7 +419,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             ),
                           ),
                           Text(
-                            'Due: ${DateFormat('MMM dd, yyyy').format(task.dueDate)}', 
+                            'Due: ${DateFormat('MMM dd, yyyy').format(task.dueDate)}',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
                           ),
                         ],

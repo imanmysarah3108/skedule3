@@ -1,4 +1,3 @@
-// --- Sign Up Page ---
 import 'package:flutter/material.dart';
 import 'package:skedule3/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -27,7 +26,6 @@ class _SignUpPageState extends State<SignUpPage> {
       );
 
       if (res.user != null) {
-        // Insert user profile into 'user_profile' table
         await supabase.from('user_profile').insert({
           'id': res.user!.id,
           'email': res.user!.email,
@@ -108,7 +106,7 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Go back to login
+                  Navigator.of(context).pop(); 
                 },
                 child: const Text('Already have an account? Sign In'),
               ),

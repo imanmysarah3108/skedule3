@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:skedule3/main.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -113,9 +112,29 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (result != null && result['name'] != null) {
-      setState(() =>
-          _userProfile = _userProfile?.copyWith(name: result['name']!));
-      // Optionally update in database
+      final newName = result['name']!.trim();
+      if (newName.isEmpty) return;
+
+      setState(() => _isLoading = true);
+      try {
+        final userId = supabase.auth.currentUser?.id;
+        if (userId == null) throw Exception("User not logged in");
+
+        await supabase
+            .from('user_profile')
+            .update({'name': newName})
+            .eq('id', userId);
+
+        setState(() {
+          _userProfile = _userProfile?.copyWith(name: newName);
+        });
+
+        showSnackBar(context, 'Profile updated successfully.');
+      } catch (e) {
+        showSnackBar(context, 'Failed to update profile: $e', isError: true);
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 

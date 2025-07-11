@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:skedule3/main.dart'; // Assuming this contains your supabase client and showSnackBar
+import 'package:skedule3/main.dart'; 
 
-// --- Hypothetical Assignment Model (You need to define this in your project) ---
-// This model should accurately reflect your 'assignment' table columns.
 class Assignment {
-  final String assignmentId; // Corresponds to assignment_id (uuid)
-  final String desc; // Corresponds to desc (text)
-  final String subjectId; // Corresponds to subject_id (text)
-  final DateTime dueDate; // Corresponds to due_date (date)
-  final String id; // Corresponds to id (uuid), likely user_profile.id
-  final String assignmentTitle; // Corresponds to assignment_title (text)
-  final bool isCompleted; // Corresponds to is_completed (bool)
-  final String priority; // Corresponds to priority (priority_level)
+  final String assignmentId; 
+  final String desc; 
+  final String subjectId; 
+  final DateTime dueDate; 
+  final String id; 
+  final String assignmentTitle; 
+  final bool isCompleted; 
+  final String priority; 
 
   Assignment({
     required this.assignmentId,
@@ -38,8 +36,6 @@ class Assignment {
     );
   }
 }
-// --- End of Hypothetical Assignment Model ---
-
 
 class AddTaskPage extends StatefulWidget {
   final Assignment? taskToEdit;
@@ -100,8 +96,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
       final response = await supabase
           .from('subject')
           .select('subject_id, subject_title')
-          .eq('userId', userId) // Correctly uses 'userId' as per your schema
-          .order('subject_title'); // Ordering by title for better display
+          .eq('userId', userId) 
+          .order('subject_title'); 
 
       setState(() {
         _userSubjects = (response as List)
@@ -163,25 +159,22 @@ class _AddTaskPageState extends State<AddTaskPage> {
         'desc': _descriptionController.text.trim(),
         'subject_id': _selectedSubjectId!,
         'due_date': _dueDate!.toIso8601String().split('T')[0],
-        'id': userId, // This maps to the foreign key 'id' in the assignment table
+        'id': userId, 
         'priority': _selectedPriority,
         'is_completed': widget.taskToEdit?.isCompleted ?? false,
       };
 
       if (widget.taskToEdit == null) {
-        // Creating a new task
-        // Supabase will automatically generate assignment_id (UUID) if it's the primary key with a default value.
         await supabase.from('assignment').insert(taskData);
         if (mounted) {
           showSnackBar(context, 'Task added successfully!');
           Navigator.of(context).pop();
         }
       } else {
-        // Updating an existing task
         await supabase
             .from('assignment')
             .update(taskData)
-            .eq('assignment_id', widget.taskToEdit!.assignmentId); // Use assignment_id for update
+            .eq('assignment_id', widget.taskToEdit!.assignmentId); 
         if (mounted) {
           showSnackBar(context, 'Task updated successfully!');
           Navigator.of(context).pop();

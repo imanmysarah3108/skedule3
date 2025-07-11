@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:skedule3/main.dart'; // Ensure this has the Supabase instance and showSnackBar method
+import 'package:skedule3/main.dart'; 
 
 class AddSubjectPage extends StatefulWidget {
   const AddSubjectPage({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:skedule3/main.dart'; // Assuming this imports `supabase` and `Class` model
-import 'package:skedule3/edit_class.dart'; // Import your AddEditClassPage
+import 'package:skedule3/main.dart'; 
+import 'package:skedule3/edit_class.dart'; 
 import 'dart:developer';
 
 class WeekSchedulePage extends StatefulWidget {
@@ -43,7 +43,6 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
       final data = await supabase
           .from('class')
           .select()
-          // Ensure 'class_id' is selected if it's the primary key for deletion
           .order('start_time', ascending: true);
 
       log('WeekSchedulePage: Fetched ${data.length} classes from Supabase.');
@@ -62,18 +61,17 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
       return groupedClasses;
     } catch (e) {
       log('WeekSchedulePage: Error fetching classes: $e', error: e);
-      rethrow; // Re-throw to be caught by FutureBuilder
+      rethrow; 
     }
   }
 
   void _reloadClasses() {
     log('WeekSchedulePage: _reloadClasses called. Setting new future.');
     setState(() {
-      _allClassesGroupedByDayFuture = _fetchClassesInternal(); // Assign a brand new future
+      _allClassesGroupedByDayFuture = _fetchClassesInternal(); 
     });
   }
 
-  // Helper for showing SnackBars
   void showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -83,11 +81,9 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
     );
   }
 
-  // New method to handle class deletion
   Future<void> _deleteClass(Class classToDelete) async {
     log('WeekSchedulePage: Attempting to delete class: ${classToDelete.subjectId} (class_id: ${classToDelete.classId})');
 
-    // Show confirmation dialog
     final bool? confirmDelete = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -96,11 +92,11 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
           content: Text('Are you sure you want to delete "${classToDelete.subjectId}"? This action cannot be undone.'),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false), // User cancels
+              onPressed: () => Navigator.of(context).pop(false), 
               child: const Text('Cancel'),
             ),
-            FilledButton( // Use FilledButton for a more prominent action
-              onPressed: () => Navigator.of(context).pop(true), // User confirms
+            FilledButton( 
+              onPressed: () => Navigator.of(context).pop(true), 
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('Delete'),
             ),
@@ -115,11 +111,11 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
         await supabase
             .from('class')
             .delete()
-            .eq('class_id', classToDelete.classId); // Crucial: Delete by the unique class_id
+            .eq('class_id', classToDelete.classId); 
 
         showSnackBar('Class "${classToDelete.subjectId}" deleted successfully!');
         log('WeekSchedulePage: Class successfully deleted from Supabase.');
-        _reloadClasses(); // Refresh the list after deletion
+        _reloadClasses(); 
       } catch (e) {
         showSnackBar('Failed to delete class: $e', isError: true);
         log('WeekSchedulePage: Error deleting class: $e', error: e);
@@ -233,17 +229,11 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
                                     ],
                                   ),
                                 ),
-                                // New: PopupMenuButton for actions (Delete, etc.)
                                 PopupMenuButton<String>(
                                   onSelected: (value) {
                                     if (value == 'delete') {
-                                      _deleteClass(cls); // Call delete method
+                                      _deleteClass(cls); 
                                     }
-                                    // Add other actions like 'edit' if you want a separate menu item
-                                    // else if (value == 'edit') {
-                                    //   // If you want edit to be also an option here, duplicate the onTap logic
-                                    //   Navigator.push(context, MaterialPageRoute(builder: (context) => AddEditClassPage(classToEdit: cls)));
-                                    // }
                                   },
                                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                                     const PopupMenuItem<String>(
@@ -256,9 +246,8 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
                                         ],
                                       ),
                                     ),
-                                    // You can add more options here, e.g., view details
                                   ],
-                                  icon: const Icon(Icons.more_vert), // Three dots icon
+                                  icon: const Icon(Icons.more_vert), 
                                 ),
                               ],
                             ),

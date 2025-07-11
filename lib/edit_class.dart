@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skedule3/main.dart';
-import 'dart:developer'; // Import for log function
+import 'dart:developer'; 
 
 class AddEditClassPage extends StatefulWidget {
   final Class? classToEdit;
@@ -18,7 +18,7 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
   final _roomController = TextEditingController();
   final _lecturerController = TextEditingController();
 
-  List<Subject> _subjects = []; // Changed to List<Subject>
+  List<Subject> _subjects = []; 
   String? _selectedSubjectId;
 
   String? _selectedDay;
@@ -69,11 +69,11 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
       final response = await supabase
           .from('subject')
           .select()
-          .eq('userId', userId) // Filter by the current user's ID
+          .eq('userId', userId) 
           .order('subject_title');
 
       setState(() {
-        _subjects = (response as List).map((json) => Subject.fromJson(json)).toList(); // Convert to List<Subject>
+        _subjects = (response as List).map((json) => Subject.fromJson(json)).toList(); 
         log('AddEditClassPage: Loaded ${_subjects.length} subjects for user $userId.');
       });
     } catch (e) {
@@ -141,28 +141,25 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
       'end_time': '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}:00',
       'color_hex': _selectedColor,
       'reminder': _setReminder,
-      'id': userId, // Ensure 'id' (user_id) is included
+      'id': userId,
     };
 
     try {
       if (widget.classToEdit == null) {
-        // Add new class
         await supabase.from('class').insert(classData);
         showSnackBar(context, 'Class added successfully!');
         log('AddEditClassPage: Class added successfully.');
       } else {
-        // Update existing class
-        // IMPORTANT: Ensure 'class_id' is the primary key for updates
         await supabase
             .from('class')
             .update(classData)
-            .eq('class_id', widget.classToEdit!.classId); // Use classId for update
+            .eq('class_id', widget.classToEdit!.classId); 
         showSnackBar(context, 'Class updated successfully!');
         log('AddEditClassPage: Class updated successfully for class_id: ${widget.classToEdit!.classId}');
       }
       if (mounted) {
         log('AddEditClassPage: Popping with true result.');
-        Navigator.of(context).pop(true); // Pop with 'true' on success
+        Navigator.of(context).pop(true); 
       }
     } catch (e) {
       showSnackBar(context, 'Failed to save class: $e', isError: true);
@@ -205,9 +202,9 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                     ),
                     items: _subjects.map((subject) {
                       return DropdownMenuItem<String>(
-                        value: subject.subjectId, // Use subject.subjectId as value
+                        value: subject.subjectId, 
                         child: Text(
-                          '${subject.subjectId} - ${subject.subjectTitle}', // Display both ID and title
+                          '${subject.subjectId} - ${subject.subjectTitle}', 
                           overflow: TextOverflow.ellipsis,
                           softWrap: false,
                         ),

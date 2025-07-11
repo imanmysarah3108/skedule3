@@ -11,7 +11,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 
 const SUPABASE_URL = 'https://ivhpkpjdgirodyjvypwd.supabase.co';
-const SUPABASE_ANON_KEY = 'ey...VYY'; // Truncated for brevity
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aHBrcGpkZ2lyb2R5anZ5cHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NDU1NzMsImV4cCI6MjA2NjIyMTU3M30.Tev4ouZoxt8XpWsOn_PYDx0mtLLoJsfqPRgZoEDdVYY';
 
 class ThemeProvider extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
@@ -159,7 +159,7 @@ class _SkeduleAppState extends State<SkeduleApp> {
         '/add_task': (context) => const AddTaskPage(),
         '/profile': (context) => const ProfilePage(),
         '/add_subject': (context) => const AddSubjectPage(),
-        '/privacy-policy': (context) => const PrivacyPolicyPage(), // ✅ Added here
+        '/privacy-policy': (context) => const PrivacyPolicyPage(), 
       },
     );
   }
@@ -167,7 +167,6 @@ class _SkeduleAppState extends State<SkeduleApp> {
 
 final supabase = Supabase.instance.client;
 
-// --- PrivacyPolicyPage Widget ---
 class PrivacyPolicyPage extends StatelessWidget {
   const PrivacyPolicyPage({super.key});
 
@@ -192,8 +191,6 @@ class PrivacyPolicyPage extends StatelessWidget {
     );
   }
 }
-
-// --- Data Models (Based on your Supabase Schema) ---
 
 class UserProfile {
   final String id;
@@ -258,10 +255,10 @@ class Class {
   final String building;
   final String room;
   final String lecturer;
-  final String day; // e.g., "Monday", "Tuesday"
+  final String day; 
   final TimeOfDay startTime;
   final TimeOfDay endTime;
-  final String colorHex; // Hex string for color
+  final String colorHex;
   final bool reminder;
 
   Class({
@@ -316,17 +313,17 @@ class Assignment {
   final String desc;
   final String subjectId;
   final DateTime dueDate;
-  final String id; // This seems to be a duplicate of assignment_id or a user_id. Assuming user_id for now.
+  final String id; 
   final String assignmentTitle;
-  bool isCompleted; // Added for check-off completed tasks
-  String priority; // e.g., 'high', 'medium', 'low'
+  bool isCompleted; 
+  String priority; 
 
   Assignment({
     required this.assignmentId,
     required this.desc,
     required this.subjectId,
     required this.dueDate,
-    required this.id, // Assuming this is user_id
+    required this.id, 
     required this.assignmentTitle,
     this.isCompleted = false,
     this.priority = 'medium',
@@ -338,10 +335,10 @@ class Assignment {
       desc: json['desc'],
       subjectId: json['subject_id'],
       dueDate: DateTime.parse(json['due_date']),
-      id: json['id'], // Assuming this is user_id
+      id: json['id'], 
       assignmentTitle: json['assignment_title'],
-      isCompleted: json['is_completed'] ?? false, // Default to false
-      priority: json['priority'] ?? 'medium', // Default to medium
+      isCompleted: json['is_completed'] ?? false, 
+      priority: json['priority'] ?? 'medium', 
     );
   }
 
@@ -350,8 +347,8 @@ class Assignment {
       'assignment_id': assignmentId,
       'desc': desc,
       'subject_id': subjectId,
-      'due_date': dueDate.toIso8601String().split('T')[0], // Only date part
-      'id': id, // Assuming this is user_id
+      'due_date': dueDate.toIso8601String().split('T')[0], 
+      'id': id, 
       'assignment_title': assignmentTitle,
       'is_completed': isCompleted,
       'priority': priority,
@@ -359,7 +356,6 @@ class Assignment {
   }
 }
 
-// --- Utility for showing snackbars ---
 void showSnackBar(BuildContext context, String message, {bool isError = false}) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
