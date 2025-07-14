@@ -95,11 +95,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     }
   }
 
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning 🌞';
+    if (hour < 17) return 'Good afternoon ☀️';
+    return 'Good evening 🌙';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Skedule  🗓️'),
+        automaticallyImplyLeading: true,
+        title: null,
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline),
@@ -118,8 +126,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 12),
+              Text(
+                _getGreeting(),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onBackground,
+                    ),
+              ),
+              const SizedBox(height: 24),
               _buildTodayClasses(context),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
               _buildUpcomingTasks(context),
             ],
           ),
@@ -175,6 +192,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
           FloatingActionButton(
             onPressed: _toggleFabExpansion,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             child: AnimatedBuilder(
               animation: _animationController,
               builder: (_, child) {
@@ -183,7 +201,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   child: child,
                 );
               },
-              child: const Icon(Icons.add),
+              child: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
             ),
           ),
         ],
@@ -198,7 +216,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).colorScheme.primaryContainer,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,7 +224,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 Text(
                   'Skedule',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.bold,
                       ),
                 ),
@@ -214,54 +232,54 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 Text(
                   'Your daily schedule companion',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white70,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.8),
                       ),
                 ),
               ],
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.home_outlined),
-            title: const Text('Home'),
+            leading: Icon(Icons.home_outlined, color: Theme.of(context).colorScheme.onSurface),
+            title: Text('Home', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             onTap: () {
               Navigator.pop(context);
             },
           ),
           ListTile(
-            leading: const Icon(Icons.calendar_today_outlined),
-            title: const Text('Whole Week Schedule'),
+            leading: Icon(Icons.calendar_today_outlined, color: Theme.of(context).colorScheme.onSurface),
+            title: Text('Whole Week Schedule', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).pushNamed('/week_schedule');
             },
           ),
           ListTile(
-            leading: const Icon(Icons.library_books_outlined),
-            title: const Text('Add/ Edit Subject'),
+            leading: Icon(Icons.library_books_outlined, color: Theme.of(context).colorScheme.onSurface),
+            title: Text('Add/Edit Subject', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).pushNamed('/add_subject');
             },
           ),
           ListTile(
-            leading: const Icon(Icons.add_box_outlined),
-            title: const Text('Add/Edit Class'),
+            leading: Icon(Icons.add_box_outlined, color: Theme.of(context).colorScheme.onSurface),
+            title: Text('Add/Edit Class', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).pushNamed('/add_edit_class');
             },
           ),
           ListTile(
-            leading: const Icon(Icons.assignment_outlined),
-            title: const Text('Add Task'),
+            leading: Icon(Icons.assignment_outlined, color: Theme.of(context).colorScheme.onSurface),
+            title: Text('Add Task', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).pushNamed('/add_task');
             },
           ),
           ListTile(
-            leading: const Icon(Icons.person_outline),
-            title: const Text('Profile'),
+            leading: Icon(Icons.person_outline, color: Theme.of(context).colorScheme.onSurface),
+            title: Text('Profile', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).pushNamed('/profile');
@@ -273,180 +291,294 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildTodayClasses(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Today\'s Schedule',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.2),
+          width: 1,
         ),
-        const SizedBox(height: 16),
-        FutureBuilder<List<Class>>(
-          future: _todayClassesFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No classes scheduled for today.'));
-            } else {
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  final cls = snapshot.data![index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: Color(int.parse(cls.colorHex.replaceAll('#', '0xFF'))),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  cls.subjectId,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                                Text('${cls.classType} - ${cls.lecturer}'),
-                                Text('${cls.startTime.format(context)} - ${cls.endTime.format(context)} at ${cls.room}, ${cls.building}'),
-                              ],
-                            ),
-                          ),
-                        ],
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.calendar_today, size: 20, 
+                color: Theme.of(context).colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                'Today\'s Schedule',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          FutureBuilder<List<Class>>(
+            future: _todayClassesFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No classes scheduled for today.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                  ),
+                );
+              } else {
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    final cls = snapshot.data![index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color: Theme.of(context).dividerColor.withOpacity(0.1),
+                          width: 1,
+                        ),
                       ),
-                    ),
-                  );
-                },
-              );
-            }
-          },
-        ),
-      ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Color(int.parse(cls.colorHex.replaceAll('#', '0xFF'))),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    cls.subjectId,
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${cls.classType} - ${cls.lecturer}',
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                                        ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${cls.startTime.format(context)} - ${cls.endTime.format(context)} at ${cls.room}, ${cls.building}',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildUpcomingTasks(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Upcoming Tasks',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.2),
+          width: 1,
         ),
-        const SizedBox(height: 16),
-        FutureBuilder<List<Assignment>>(
-          future: _upcomingTasksFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No upcoming tasks.'));
-            } else {
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  final task = snapshot.data![index];
-                  Color priorityColor;
-                  switch (task.priority.toLowerCase()) {
-                    case 'high':
-                      priorityColor = Colors.red;
-                      break;
-                    case 'medium':
-                      priorityColor = Colors.orange;
-                      break;
-                    case 'low':
-                      priorityColor = Colors.green;
-                      break;
-                    default:
-                      priorityColor = Colors.grey;
-                  }
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.assignment_outlined, size: 20, 
+                color: Theme.of(context).colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                'Upcoming Tasks',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          FutureBuilder<List<Assignment>>(
+            future: _upcomingTasksFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No upcoming tasks.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                  ),
+                );
+              } else {
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    final task = snapshot.data![index];
+                    Color priorityColor;
+                    switch (task.priority.toLowerCase()) {
+                      case 'high':
+                        priorityColor = Colors.red.shade400;
+                        break;
+                      case 'medium':
+                        priorityColor = Colors.orange.shade400;
+                        break;
+                      case 'low':
+                        priorityColor = Colors.green.shade400;
+                        break;
+                      default:
+                        priorityColor = Colors.grey.shade400;
+                    }
 
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: Checkbox(
-                        value: task.isCompleted,
-                        onChanged: (val) => _toggleTaskCompletion(task),
-                        activeColor: Colors.green,
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color: Theme.of(context).dividerColor.withOpacity(0.1),
+                          width: 1,
+                        ),
                       ),
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (task.subjectId.isNotEmpty)
+                      child: ListTile(
+                        leading: Checkbox(
+                          value: task.isCompleted,
+                          onChanged: (val) => _toggleTaskCompletion(task),
+                          activeColor: Theme.of(context).colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (task.subjectId.isNotEmpty)
+                              Text(
+                                task.subjectId,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                            const SizedBox(height: 2),
                             Text(
-                              task.subjectId,
+                              task.assignmentTitle,
+                              style: TextStyle(
+                                decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text(
+                              task.desc,
+                              style: TextStyle(
+                                decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Due: ${DateFormat('MMM dd, yyyy').format(task.dueDate)}',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: const Color.fromARGB(255, 255, 236, 189),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                   ),
                             ),
-                          Text(
-                            task.assignmentTitle,
+                          ],
+                        ),
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: priorityColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: priorityColor.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            task.priority.toUpperCase(),
                             style: TextStyle(
-                              decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                              color: priorityColor,
                               fontWeight: FontWeight.bold,
+                              fontSize: 10,
                             ),
-                          ),
-                        ],
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            task.desc,
-                            style: TextStyle(
-                              decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                            ),
-                          ),
-                          Text(
-                            'Due: ${DateFormat('MMM dd, yyyy').format(task.dueDate)}',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: priorityColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          task.priority.toUpperCase(),
-                          style: TextStyle(
-                            color: priorityColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              );
-            }
-          },
-        ),
-      ],
+                    );
+                  },
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }
