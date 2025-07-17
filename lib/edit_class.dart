@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skedule3/main.dart';
-import 'dart:developer'; 
+import 'dart:developer';
 
 class AddEditClassPage extends StatefulWidget {
   final Class? classToEdit;
@@ -18,7 +18,7 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
   final _roomController = TextEditingController();
   final _lecturerController = TextEditingController();
 
-  List<Subject> _subjects = []; 
+  List<Subject> _subjects = [];
   String? _selectedSubjectId;
 
   String? _selectedDay;
@@ -69,11 +69,11 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
       final response = await supabase
           .from('subject')
           .select()
-          .eq('userId', userId) 
+          .eq('userId', userId)
           .order('subject_title');
 
       setState(() {
-        _subjects = (response as List).map((json) => Subject.fromJson(json)).toList(); 
+        _subjects = (response as List).map((json) => Subject.fromJson(json)).toList();
         log('AddEditClassPage: Loaded ${_subjects.length} subjects for user $userId.');
       });
     } catch (e) {
@@ -153,13 +153,13 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
         await supabase
             .from('class')
             .update(classData)
-            .eq('class_id', widget.classToEdit!.classId); 
+            .eq('class_id', widget.classToEdit!.classId);
         showSnackBar(context, 'Class updated successfully!');
         log('AddEditClassPage: Class updated successfully for class_id: ${widget.classToEdit!.classId}');
       }
       if (mounted) {
         log('AddEditClassPage: Popping with true result.');
-        Navigator.of(context).pop(true); 
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       showSnackBar(context, 'Failed to save class: $e', isError: true);
@@ -193,142 +193,259 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  DropdownButtonFormField<String>(
-                    value: _selectedSubjectId,
-                    decoration: const InputDecoration(
-                      labelText: 'Subject',
-                      prefixIcon: Icon(Icons.book_outlined),
-                      isDense: true,
-                    ),
-                    items: _subjects.map((subject) {
-                      return DropdownMenuItem<String>(
-                        value: subject.subjectId, 
-                        child: Text(
-                          '${subject.subjectId} - ${subject.subjectTitle}', 
-                          overflow: TextOverflow.ellipsis,
-                          softWrap: false,
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) => setState(() => _selectedSubjectId = value),
-                    validator: (value) => value == null ? 'Please select a subject' : null,
-                  ),
-                  const SizedBox(height: 16),
-
-                  TextFormField(
-                    controller: _classTypeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Class Type - Lecture, Lab, Tutorial',
-                      prefixIcon: Icon(Icons.type_specimen_outlined),
-                      isDense: true,
-                    ),
-                    validator: (value) => value!.isEmpty ? 'Enter class type' : null,
-                  ),
-                  const SizedBox(height: 16),
-
-                  TextFormField(
-                    controller: _buildingController,
-                    decoration: const InputDecoration(
-                      labelText: 'Building',
-                      prefixIcon: Icon(Icons.location_city_outlined),
-                      isDense: true,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  TextFormField(
-                    controller: _roomController,
-                    decoration: const InputDecoration(
-                      labelText: 'Room',
-                      prefixIcon: Icon(Icons.door_front_door_outlined),
-                      isDense: true,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  TextFormField(
-                    controller: _lecturerController,
-                    decoration: const InputDecoration(
-                      labelText: 'Lecturer',
-                      prefixIcon: Icon(Icons.person_outline),
-                      isDense: true,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  DropdownButtonFormField<String>(
-                    value: _selectedDay,
-                    decoration: const InputDecoration(
-                      labelText: 'Day',
-                      prefixIcon: Icon(Icons.calendar_today_outlined),
-                      isDense: true,
-                    ),
-                    items: _daysOfWeek.map((day) {
-                      return DropdownMenuItem(value: day, child: Text(day));
-                    }).toList(),
-                    onChanged: (value) => setState(() => _selectedDay = value),
-                    validator: (value) => value == null ? 'Please select a day' : null,
-                  ),
-                  const SizedBox(height: 16),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => _selectTime(context, true),
-                          child: Text(
-                            _startTime == null
-                                ? 'Select Start Time'
-                                : 'Start: ${_startTime!.format(context)}',
+                  // --- Class Information Section ---
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    margin: const EdgeInsets.only(bottom: 24),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Class Information',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            value: _selectedSubjectId,
+                            decoration: const InputDecoration(
+                              labelText: 'Subject',
+                              prefixIcon: Icon(Icons.book_outlined),
+                              isDense: true,
+                            ),
+                            items: _subjects.map((subject) {
+                              return DropdownMenuItem<String>(
+                                value: subject.subjectId,
+                                child: Text(
+                                  '${subject.subjectId} - ${subject.subjectTitle}',
+                                  overflow: TextOverflow.ellipsis,
+                                  softWrap: false,
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) => setState(() => _selectedSubjectId = value),
+                            validator: (value) => value == null ? 'Please select a subject' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _classTypeController,
+                            decoration: const InputDecoration(
+                              labelText: 'Class Type - Lecture, Lab, Tutorial',
+                              prefixIcon: Icon(Icons.type_specimen_outlined),
+                              isDense: true,
+                            ),
+                            validator: (value) => value!.isEmpty ? 'Enter class type' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _lecturerController,
+                            decoration: const InputDecoration(
+                              labelText: 'Lecturer',
+                              prefixIcon: Icon(Icons.person_outline),
+                              isDense: true,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => _selectTime(context, false),
-                          child: Text(
-                            _endTime == null
-                                ? 'Select End Time'
-                                : 'End: ${_endTime!.format(context)}',
+                    ),
+                  ),
+
+                  // --- Location Details Section ---
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    margin: const EdgeInsets.only(bottom: 24),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Location Details',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
                           ),
-                        ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _buildingController,
+                            decoration: const InputDecoration(
+                              labelText: 'Building',
+                              prefixIcon: Icon(Icons.location_city_outlined),
+                              isDense: true,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _roomController,
+                            decoration: const InputDecoration(
+                              labelText: 'Room',
+                              prefixIcon: Icon(Icons.door_front_door_outlined),
+                              isDense: true,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
 
-                  Row(
-                    children: _availableColors.map((colorHex) {
-                      final isSelected = _selectedColor == colorHex;
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedColor = colorHex),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: isSelected ? Colors.black : Colors.transparent, width: 2),
+                  // --- Schedule & Time Section ---
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    margin: const EdgeInsets.only(bottom: 24),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Schedule & Time',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
                           ),
-                          child: CircleAvatar(
-                            backgroundColor: Color(int.parse(colorHex.replaceFirst('#', '0xff'))),
-                            radius: 14,
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            value: _selectedDay,
+                            decoration: const InputDecoration(
+                              labelText: 'Day',
+                              prefixIcon: Icon(Icons.calendar_today_outlined),
+                              isDense: true,
+                            ),
+                            items: _daysOfWeek.map((day) {
+                              return DropdownMenuItem(value: day, child: Text(day));
+                            }).toList(),
+                            onChanged: (value) => setState(() => _selectedDay = value),
+                            validator: (value) => value == null ? 'Please select a day' : null,
                           ),
-                        ),
-                      );
-                    }).toList(),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: InkWell( // Use InkWell for tap feedback
+                                  onTap: () => _selectTime(context, true),
+                                  child: InputDecorator( // Makes it look like a TextFormField
+                                    decoration: InputDecoration(
+                                      labelText: 'Start Time',
+                                      prefixIcon: const Icon(Icons.access_time),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      filled: true,
+                                      fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                                      isDense: true,
+                                    ),
+                                    child: Text(
+                                      _startTime == null
+                                          ? 'Select Time'
+                                          : _startTime!.format(context),
+                                      style: Theme.of(context).textTheme.titleMedium,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: InkWell( // Use InkWell for tap feedback
+                                  onTap: () => _selectTime(context, false),
+                                  child: InputDecorator( // Makes it look like a TextFormField
+                                    decoration: InputDecoration(
+                                      labelText: 'End Time',
+                                      prefixIcon: const Icon(Icons.access_time),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      filled: true,
+                                      fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                                      isDense: true,
+                                    ),
+                                    child: Text(
+                                      _endTime == null
+                                          ? 'Select Time'
+                                          : _endTime!.format(context),
+                                      style: Theme.of(context).textTheme.titleMedium,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
 
-                  const SizedBox(height: 16),
-
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    value: _setReminder,
-                    onChanged: (value) => setState(() => _setReminder = value),
-                    title: const Text('Set Reminder'),
+                  // --- Display & Reminders Section ---
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    margin: const EdgeInsets.only(bottom: 24),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Display & Reminders',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Choose a display color:',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap( // Use Wrap for better responsiveness on smaller screens
+                            spacing: 8.0, // horizontal spacing
+                            runSpacing: 8.0, // vertical spacing
+                            children: _availableColors.map((colorHex) {
+                              final isSelected = _selectedColor == colorHex;
+                              return GestureDetector(
+                                onTap: () => setState(() => _selectedColor = colorHex),
+                                child: Container(
+                                  width: 36, // Increased size
+                                  height: 36, // Increased size
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Color(int.parse(colorHex.replaceFirst('#', '0xff'))),
+                                    border: Border.all(
+                                        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent, // Highlight with primary color
+                                        width: 3), // Thicker border for selection
+                                  ),
+                                  child: isSelected
+                                      ? Icon(Icons.check, color: Colors.white, size: 20) // Checkmark when selected
+                                      : null,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 16),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: _setReminder,
+                            onChanged: (value) => setState(() => _setReminder = value),
+                            title: const Text('Set Reminder'),
+                            secondary: Icon(Icons.notifications_outlined, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 24),
 
+                  // --- Save Button ---
                   _isLoading
                       ? const CircularProgressIndicator()
                       : SizedBox(
