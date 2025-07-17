@@ -1,41 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:skedule3/main.dart'; 
+import 'package:skedule3/main.dart';
 
-class Assignment {
-  final String assignmentId; 
-  final String desc; 
-  final String subjectId; 
-  final DateTime dueDate; 
-  final String id; 
-  final String assignmentTitle; 
-  final bool isCompleted; 
-  final String priority; 
-
-  Assignment({
-    required this.assignmentId,
-    required this.desc,
-    required this.subjectId,
-    required this.dueDate,
-    required this.id,
-    required this.assignmentTitle,
-    required this.isCompleted,
-    required this.priority,
-  });
-
-  factory Assignment.fromJson(Map<String, dynamic> json) {
-    return Assignment(
-      assignmentId: json['assignment_id'] as String,
-      desc: json['desc'] as String,
-      subjectId: json['subject_id'] as String,
-      dueDate: DateTime.parse(json['due_date'] as String),
-      id: json['id'] as String,
-      assignmentTitle: json['assignment_title'] as String,
-      isCompleted: json['is_completed'] as bool,
-      priority: json['priority'] as String,
-    );
-  }
-}
+// Assuming Assignment class is defined in main.dart or is accessible
+// If not, you might need to copy its definition here or ensure main.dart is imported.
+// For this example, I'll assume it's correctly imported from main.dart.
 
 class AddTaskPage extends StatefulWidget {
   final Assignment? taskToEdit;
@@ -96,8 +65,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
       final response = await supabase
           .from('subject')
           .select('subject_id, subject_title')
-          .eq('userId', userId) 
-          .order('subject_title'); 
+          .eq('userId', userId)
+          .order('subject_title');
 
       setState(() {
         _userSubjects = (response as List)
@@ -159,7 +128,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
         'desc': _descriptionController.text.trim(),
         'subject_id': _selectedSubjectId!,
         'due_date': _dueDate!.toIso8601String().split('T')[0],
-        'id': userId, 
+        'id': userId,
         'priority': _selectedPriority,
         'is_completed': widget.taskToEdit?.isCompleted ?? false,
       };
@@ -174,7 +143,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
         await supabase
             .from('assignment')
             .update(taskData)
-            .eq('assignment_id', widget.taskToEdit!.assignmentId); 
+            .eq('assignment_id', widget.taskToEdit!.assignmentId);
         if (mounted) {
           showSnackBar(context, 'Task updated successfully!');
           Navigator.of(context).pop();
@@ -196,93 +165,143 @@ class _AddTaskPageState extends State<AddTaskPage> {
         title: Text(widget.taskToEdit == null ? 'Add New Task' : 'Edit Task'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(16.0), // Adjusted padding
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch cards
             children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Task Title'),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter task title' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration:
-                    const InputDecoration(labelText: 'Description (Optional)'),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              _isLoadingSubjects
-                  ? const Center(child: CircularProgressIndicator())
-                  : _userSubjects.isEmpty
-                      ? const Text('No subjects available for this user.')
-                      : DropdownButtonFormField<String>(
-                          value: _selectedSubjectId,
-                          decoration: const InputDecoration(
-                            labelText: 'Subject',
-                            prefixIcon: Icon(Icons.book_outlined),
-                          ),
-                          hint: const Text('Choose a subject'),
-                          items: _userSubjects.map((subject) {
-                            final id = subject['subject_id'] ?? '';
-                            final title = subject['subject_title'] ?? '';
-                            return DropdownMenuItem<String>(
-                              value: id,
-                              child: Text('$id - $title'), 
-                            );
-                          }).toList(),
-                          onChanged: (value) =>
-                              setState(() => _selectedSubjectId = value),
-                          validator: (value) => value == null || value.isEmpty
-                              ? 'Please select a subject'
-                              : null,
+              // --- Task Details Section ---
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                margin: const EdgeInsets.only(bottom: 24),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Task Details',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _titleController,
+                        decoration: const InputDecoration(
+                          labelText: 'Task Title',
+                          prefixIcon: Icon(Icons.assignment_outlined), // Added icon
                         ),
-              const SizedBox(height: 16),
-              InkWell(
-                onTap: () => _selectDueDate(context),
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: 'Due Date',
-                    prefixIcon: const Icon(Icons.date_range_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor:
-                        Theme.of(context).inputDecorationTheme.fillColor,
-                  ),
-                  child: Text(
-                    _dueDate == null
-                        ? 'Select Date'
-                        : DateFormat('MMM dd, yyyy').format(_dueDate!),
-                    style: Theme.of(context).textTheme.titleMedium,
+                        validator: (value) =>
+                            value == null || value.isEmpty ? 'Enter task title' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _descriptionController,
+                        decoration:
+                            const InputDecoration(
+                              labelText: 'Description (Optional)',
+                              prefixIcon: Icon(Icons.description_outlined), // Added icon
+                            ),
+                        maxLines: 3,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedPriority,
-                decoration: const InputDecoration(
-                  labelText: 'Priority',
-                  prefixIcon: Icon(Icons.priority_high_outlined),
+
+              // --- Assignment Specifics Section ---
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                margin: const EdgeInsets.only(bottom: 24),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Assignment Specifics',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                      ),
+                      const SizedBox(height: 16),
+                      _isLoadingSubjects
+                          ? const Center(child: CircularProgressIndicator())
+                          : _userSubjects.isEmpty
+                              ? const Text('No subjects available for this user. Please add one first.')
+                              : DropdownButtonFormField<String>(
+                                  value: _selectedSubjectId,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Subject',
+                                    prefixIcon: Icon(Icons.book_outlined),
+                                  ),
+                                  hint: const Text('Choose a subject'),
+                                  items: _userSubjects.map((subject) {
+                                    final id = subject['subject_id'] ?? '';
+                                    final title = subject['subject_title'] ?? '';
+                                    return DropdownMenuItem<String>(
+                                      value: id,
+                                      child: Text('$id - $title'),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) =>
+                                      setState(() => _selectedSubjectId = value),
+                                  validator: (value) => value == null || value.isEmpty
+                                      ? 'Please select a subject'
+                                      : null,
+                                ),
+                      const SizedBox(height: 16),
+                      InkWell(
+                        onTap: () => _selectDueDate(context),
+                        child: InputDecorator( // Use InputDecorator for consistent styling
+                          decoration: InputDecoration(
+                            labelText: 'Due Date',
+                            prefixIcon: const Icon(Icons.date_range_outlined),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                          ),
+                          child: Text(
+                            _dueDate == null
+                                ? 'Select Date'
+                                : DateFormat('MMM dd, yyyy').format(_dueDate!),
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _selectedPriority,
+                        decoration: const InputDecoration(
+                          labelText: 'Priority',
+                          prefixIcon: Icon(Icons.priority_high_outlined),
+                        ),
+                        items: _priorityLevels.map((String priority) {
+                          return DropdownMenuItem<String>(
+                            value: priority,
+                            child: Text(priority.capitalize()),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedPriority = newValue!;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-                items: _priorityLevels.map((String priority) {
-                  return DropdownMenuItem<String>(
-                    value: priority,
-                    child: Text(priority.capitalize()),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedPriority = newValue!;
-                  });
-                },
               ),
+
               const SizedBox(height: 24),
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
