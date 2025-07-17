@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:skedule3/main.dart'; 
-import 'package:skedule3/edit_class.dart'; 
+import 'package:skedule3/main.dart';
+import 'package:skedule3/edit_class.dart';
 import 'dart:developer';
 
 class WeekSchedulePage extends StatefulWidget {
@@ -43,9 +43,10 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
       final data = await supabase
           .from('class')
           .select()
+          .eq('id', userId) // <--- CRITICAL FIX: Filter by userId directly in the query
           .order('start_time', ascending: true);
 
-      log('WeekSchedulePage: Fetched ${data.length} classes from Supabase.');
+      log('WeekSchedulePage: Fetched ${data.length} classes from Supabase for user $userId.');
 
       final List<Class> allClasses = data.map((json) => Class.fromJson(json)).toList();
       final Map<String, List<Class>> groupedClasses = {};
@@ -53,6 +54,9 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
         groupedClasses[day] = [];
       }
       for (var cls in allClasses) {
+        // This check (cls.id == userId) is now redundant because the Supabase query
+        // already filters by userId, but it's harmless to keep.
+        // We can simplify it to just check if the day exists in our map.
         if (groupedClasses.containsKey(cls.day)) {
           groupedClasses[cls.day]!.add(cls);
         }
@@ -61,14 +65,14 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
       return groupedClasses;
     } catch (e) {
       log('WeekSchedulePage: Error fetching classes: $e', error: e);
-      rethrow; 
+      rethrow;
     }
   }
 
   void _reloadClasses() {
     log('WeekSchedulePage: _reloadClasses called. Setting new future.');
     setState(() {
-      _allClassesGroupedByDayFuture = _fetchClassesInternal(); 
+      _allClassesGroupedByDayFuture = _fetchClassesInternal();
     });
   }
 
@@ -92,11 +96,11 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
           content: Text('Are you sure you want to delete "${classToDelete.subjectId}"? This action cannot be undone.'),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false), 
+              onPressed: () => Navigator.of(context).pop(false),
               child: const Text('Cancel'),
             ),
-            FilledButton( 
-              onPressed: () => Navigator.of(context).pop(true), 
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('Delete'),
             ),
@@ -111,11 +115,11 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
         await supabase
             .from('class')
             .delete()
-            .eq('class_id', classToDelete.classId); 
+            .eq('class_id', classToDelete.classId);
 
         showSnackBar('Class "${classToDelete.subjectId}" deleted successfully!');
         log('WeekSchedulePage: Class successfully deleted from Supabase.');
-        _reloadClasses(); 
+        _reloadClasses();
       } catch (e) {
         showSnackBar('Failed to delete class: $e', isError: true);
         log('WeekSchedulePage: Error deleting class: $e', error: e);
@@ -177,6 +181,10 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
                       final cls = classesForDay[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
+                        elevation: 2, // Added subtle elevation for better pop-up effect
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12), // Slightly more rounded corners
+                        ),
                         child: InkWell(
                           // The main tap action for editing
                           onTap: () async {
@@ -199,40 +207,84 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
                             padding: const EdgeInsets.all(16.0),
                             child: Row(
                               children: [
+                                // Color bar on the left
                                 Container(
                                   width: 8,
-                                  height: 60,
+                                  height: 80, // Increased height to match new content height
                                   decoration: BoxDecoration(
                                     color: Color(int.parse(cls.colorHex.replaceAll('#', '0xFF'))),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 16), // Increased space for better separation
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         cls.subjectId,
-                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        style: Theme.of(context).textTheme.titleLarge?.copyWith( // Made subject ID larger
                                               fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                             ),
                                       ),
-                                      Text(
-                                        '${cls.classType} - ${cls.lecturer}',
-                                        style: Theme.of(context).textTheme.bodyMedium,
+                                      const SizedBox(height: 4),
+                                      // Group Class Type and Lecturer
+                                      Row(
+                                        children: [
+                                          Icon(Icons.person_outline, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              '${cls.classType} - ${cls.lecturer}',
+                                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                                                  ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        '${cls.startTime.format(context)} - ${cls.endTime.format(context)} at ${cls.room}, ${cls.building}',
-                                        style: Theme.of(context).textTheme.bodySmall,
+                                      const SizedBox(height: 4),
+                                      // Group Time
+                                      Row(
+                                        children: [
+                                          Icon(Icons.access_time, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${cls.startTime.format(context)} - ${cls.endTime.format(context)}',
+                                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                  fontWeight: FontWeight.w600, // Make time slightly bolder
+                                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.9),
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      // Group Location
+                                      Row(
+                                        children: [
+                                          Icon(Icons.location_on_outlined, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              '${cls.room}, ${cls.building}',
+                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                                  ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ),
+                                // Popup menu for delete
                                 PopupMenuButton<String>(
                                   onSelected: (value) {
                                     if (value == 'delete') {
-                                      _deleteClass(cls); 
+                                      _deleteClass(cls);
                                     }
                                   },
                                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -247,7 +299,7 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
                                       ),
                                     ),
                                   ],
-                                  icon: const Icon(Icons.more_vert), 
+                                  icon: const Icon(Icons.more_vert),
                                 ),
                               ],
                             ),
