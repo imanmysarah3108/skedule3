@@ -127,6 +127,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
+              // 1) Greeting based on current time
               Text(
                 _getGreeting(),
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -134,7 +135,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       color: Theme.of(context).colorScheme.onBackground,
                     ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 4), // Small space
+              // 2) "Have a great day" text
+              Text(
+                'Have a great day',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+                    ),
+              ),
+              const SizedBox(height: 24), // Existing space
+              // 3) New section for date and time zone
+              _buildDateAndTimeZoneSection(context),
+              const SizedBox(height: 24), // Add some space below this section
               _buildTodayClasses(context),
               const SizedBox(height: 16),
               _buildUpcomingTasks(context),
@@ -291,13 +303,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildTodayClasses(BuildContext context) {
+    // Determine color based on current theme brightness
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final sectionColor = isDarkMode
+        ? const Color(0xFFB8A9FF) // Light lavender for dark mode
+        : const Color(0xFF7B61FF); // Moderate purple for light mode
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2),
+        color: sectionColor.withOpacity(0.2), // Apply the chosen color with opacity
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.2),
+          color: sectionColor.withOpacity(0.3), // Border with the same color, slightly more opaque
           width: 1,
         ),
         boxShadow: [
@@ -313,7 +331,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         children: [
           Row(
             children: [
-              Icon(Icons.calendar_today, size: 20, 
+              Icon(Icons.calendar_today, size: 20,
                 color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 8),
               Text(
@@ -415,13 +433,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildUpcomingTasks(BuildContext context) {
+    // Determine color based on current theme brightness
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final sectionColor = isDarkMode
+        ? const Color(0xFFB8A9FF) // Light lavender for dark mode
+        : const Color(0xFF7B61FF); // Moderate purple for light mode
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2),
+        color: sectionColor.withOpacity(0.2), // Apply the chosen color with opacity
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.2),
+          color: sectionColor.withOpacity(0.3), // Border with the same color, slightly more opaque
           width: 1,
         ),
         boxShadow: [
@@ -437,7 +461,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         children: [
           Row(
             children: [
-              Icon(Icons.assignment_outlined, size: 20, 
+              Icon(Icons.assignment_outlined, size: 20,
                 color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 8),
               Text(
@@ -576,6 +600,85 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 );
               }
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // New method for the date and time zone section
+  Widget _buildDateAndTimeZoneSection(BuildContext context) {
+    final now = DateTime.now();
+    final currentDay = DateFormat('EEEE').format(now); // e.g., "Friday"
+    final currentDate = DateFormat('dd').format(now); // e.g., "18"
+    final currentMonth = DateFormat('MMMM yyyy').format(now); // e.g., "July 2025"
+    final currentTime = DateFormat('HH:mm:ss').format(now); // e.g., "02:54:17"
+    final timeZoneName = now.timeZoneName; // e.g., "MYT" (Malaysia Time)
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        // Removed explicit color to make it invisible
+        borderRadius: BorderRadius.circular(16),
+        // Removed border to focus on shadow
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.1), // Slightly more visible shadow
+            blurRadius: 10, // Increased blur for a softer, more "popping" effect
+            offset: const Offset(0, 6), // Increased offset to make it stand out more
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Left side: Current Day, Date, Month
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                currentDay,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8), // Adjusted color for better visibility on transparent background
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                currentDate,
+                style: Theme.of(context).textTheme.displaySmall?.copyWith( // Big text for date
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface, // Adjusted color
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                currentMonth,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith( // Medium text for month
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.9), // Adjusted color
+                    ),
+              ),
+            ],
+          ),
+          // Right side: Current Real Time and Time Zone
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                currentTime,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface, // Adjusted color
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                timeZoneName,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), // Adjusted color
+                    ),
+              ),
+            ],
           ),
         ],
       ),
