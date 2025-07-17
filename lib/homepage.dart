@@ -104,6 +104,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    // Get the current route name to highlight the active drawer item
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
@@ -117,7 +120,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           ),
         ],
       ),
-      drawer: _buildDrawer(context),
+      // Pass the current route to the drawer builder
+      drawer: _buildDrawer(context, currentRoute),
       body: RefreshIndicator(
         onRefresh: _fetchData,
         child: SingleChildScrollView(
@@ -138,7 +142,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               const SizedBox(height: 4), // Small space
               // 2) "Have a great day" text
               Text(
-                'Have a great day',
+                'Have a great day!',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
                     ),
@@ -221,7 +225,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildDrawer(BuildContext context) {
+  // Modified _buildDrawer to accept currentRoute
+  Widget _buildDrawer(BuildContext context, String? currentRoute) {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -251,50 +256,81 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ),
           ),
           ListTile(
-            leading: Icon(Icons.home_outlined, color: Theme.of(context).colorScheme.onSurface),
-            title: Text('Home', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+            leading: Icon(Icons.home_outlined),
+            title: Text('Home'),
+            selected: currentRoute == '/home', // Highlight if current route
+            selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1), // Light background for selected
+            selectedColor: Theme.of(context).colorScheme.primary, // Primary color for icon/text
             onTap: () {
               Navigator.pop(context);
+              if (currentRoute != '/home') { // Only navigate if not already on this page
+                Navigator.of(context).pushReplacementNamed('/home');
+              }
             },
           ),
           ListTile(
-            leading: Icon(Icons.calendar_today_outlined, color: Theme.of(context).colorScheme.onSurface),
-            title: Text('Whole Week Schedule', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+            leading: Icon(Icons.calendar_today_outlined),
+            title: Text('Whole Week Schedule'),
+            selected: currentRoute == '/week_schedule',
+            selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            selectedColor: Theme.of(context).colorScheme.primary,
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).pushNamed('/week_schedule');
+              if (currentRoute != '/week_schedule') {
+                Navigator.of(context).pushNamed('/week_schedule');
+              }
             },
           ),
           ListTile(
-            leading: Icon(Icons.library_books_outlined, color: Theme.of(context).colorScheme.onSurface),
-            title: Text('Add/Edit Subject', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+            leading: Icon(Icons.library_books_outlined),
+            title: Text('Add/Edit Subject'),
+            selected: currentRoute == '/add_subject',
+            selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            selectedColor: Theme.of(context).colorScheme.primary,
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).pushNamed('/add_subject');
+              if (currentRoute != '/add_subject') {
+                Navigator.of(context).pushNamed('/add_subject');
+              }
             },
           ),
           ListTile(
-            leading: Icon(Icons.add_box_outlined, color: Theme.of(context).colorScheme.onSurface),
-            title: Text('Add/Edit Class', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+            leading: Icon(Icons.add_box_outlined),
+            title: Text('Add/Edit Class'),
+            selected: currentRoute == '/add_edit_class',
+            selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            selectedColor: Theme.of(context).colorScheme.primary,
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).pushNamed('/add_edit_class');
+              if (currentRoute != '/add_edit_class') {
+                Navigator.of(context).pushNamed('/add_edit_class');
+              }
             },
           ),
           ListTile(
-            leading: Icon(Icons.assignment_outlined, color: Theme.of(context).colorScheme.onSurface),
-            title: Text('Add Task', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+            leading: Icon(Icons.assignment_outlined),
+            title: Text('Add Task'),
+            selected: currentRoute == '/add_task',
+            selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            selectedColor: Theme.of(context).colorScheme.primary,
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).pushNamed('/add_task');
+              if (currentRoute != '/add_task') {
+                Navigator.of(context).pushNamed('/add_task');
+              }
             },
           ),
           ListTile(
-            leading: Icon(Icons.person_outline, color: Theme.of(context).colorScheme.onSurface),
-            title: Text('Profile', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+            leading: Icon(Icons.person_outline),
+            title: Text('Profile'),
+            selected: currentRoute == '/profile',
+            selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            selectedColor: Theme.of(context).colorScheme.primary,
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).pushNamed('/profile');
+              if (currentRoute != '/profile') {
+                Navigator.of(context).pushNamed('/profile');
+              }
             },
           ),
         ],
