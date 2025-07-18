@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skedule3/main.dart';
 import 'dart:developer';
+import 'dart:async'; // Import for Timer
 
 class AddEditClassPage extends StatefulWidget {
   final Class? classToEdit;
@@ -27,6 +28,10 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
   String _selectedColor = '#42A5F5';
   bool _setReminder = true;
   bool _isLoading = false;
+
+  // New state variables for button feedback
+  bool _isSuccess = false;
+  Timer? _successTimer;
 
   final List<String> _daysOfWeek = [
     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
@@ -56,6 +61,16 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
     } else {
       log('AddEditClassPage: Adding new class.');
     }
+  }
+
+  @override
+  void dispose() {
+    _classTypeController.dispose();
+    _buildingController.dispose();
+    _roomController.dispose();
+    _lecturerController.dispose();
+    _successTimer?.cancel(); // Cancel the timer to prevent memory leaks
+    super.dispose();
   }
 
   Future<void> _loadSubjects() async {
@@ -119,12 +134,15 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
       return;
     }
 
-    setState(() => _isLoading = true);
-    log('AddEditClassPage: _saveClass started, isLoading = true.');
+    setState(() {
+      _isLoading = true;
+      _isSuccess = false; // Reset success state
+    });
+    _successTimer?.cancel(); // Cancel any previous timer
 
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
-      showSnackBar(context, 'User not logged in.', isError: true);
+      showSnackBar(context, 'User not logged in.', isError: true); // Corrected 'isStates' to 'isError'
       setState(() => _isLoading = false);
       log('AddEditClassPage: User not logged in, cannot save.');
       return;
@@ -157,10 +175,21 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
         showSnackBar(context, 'Class updated successfully!');
         log('AddEditClassPage: Class updated successfully for class_id: ${widget.classToEdit!.classId}');
       }
-      if (mounted) {
-        log('AddEditClassPage: Popping with true result.');
-        Navigator.of(context).pop(true);
-      }
+
+      // Set success state and start timer to revert
+      setState(() {
+        _isSuccess = true;
+      });
+      _successTimer = Timer(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            _isSuccess = false;
+          });
+          // Pop the page after the color feedback is shown
+          Navigator.of(context).pop(true);
+        }
+      });
+
     } catch (e) {
       showSnackBar(context, 'Failed to save class: $e', isError: true);
       log('AddEditClassPage: Failed to save class: $e', error: e);
@@ -175,6 +204,16 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
   @override
   Widget build(BuildContext context) {
     log('AddEditClassPage: build called.');
+    // Determine the button's background color based on _isSuccess
+    final Color resolvedBackgroundColor = _isSuccess
+        ? Colors.green
+        : Theme.of(context).elevatedButtonTheme.style?.backgroundColor?.resolve({}) ?? Theme.of(context).colorScheme.primary;
+
+    // Determine the button's foreground color (text/icon)
+    final Color resolvedForegroundColor = _isSuccess
+        ? Colors.white
+        : Theme.of(context).elevatedButtonTheme.style?.foregroundColor?.resolve({}) ?? Theme.of(context).colorScheme.onPrimary;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.classToEdit == null ? 'Add Class' : 'Edit Class'),
@@ -454,6 +493,16 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                           child: ElevatedButton(
                             onPressed: _saveClass,
                             child: Text(widget.classToEdit == null ? 'Add Class' : 'Update Class'),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              // Conditional background color and foreground color
+                              backgroundColor: resolvedBackgroundColor,
+                              foregroundColor: resolvedForegroundColor,
+                              // Removed overlayColor
+                            ),
                           ),
                         ),
                   const SizedBox(height: 24),

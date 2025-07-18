@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skedule3/main.dart';
-
-// Assuming Assignment class is defined in main.dart or is accessible
-// If not, you might need to copy its definition here or ensure main.dart is imported.
-// For this example, I'll assume it's correctly imported from main.dart.
+import 'dart:async'; // Import for Timer
 
 class AddTaskPage extends StatefulWidget {
   final Assignment? taskToEdit;
@@ -29,6 +26,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   final List<String> _priorityLevels = ['high', 'medium', 'low'];
 
+  // New state variables for button feedback
+  bool _isSuccess = false;
+  Timer? _successTimer;
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +47,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _successTimer?.cancel(); // Cancel the timer to prevent memory leaks
     super.dispose();
   }
 
@@ -113,7 +115,11 @@ class _AddTaskPageState extends State<AddTaskPage> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _isSuccess = false; // Reset success state
+    });
+    _successTimer?.cancel(); // Cancel any previous timer
 
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
@@ -137,7 +143,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
         await supabase.from('assignment').insert(taskData);
         if (mounted) {
           showSnackBar(context, 'Task added successfully!');
-          Navigator.of(context).pop();
         }
       } else {
         await supabase
@@ -146,9 +151,23 @@ class _AddTaskPageState extends State<AddTaskPage> {
             .eq('assignment_id', widget.taskToEdit!.assignmentId);
         if (mounted) {
           showSnackBar(context, 'Task updated successfully!');
-          Navigator.of(context).pop();
         }
       }
+
+      // Set success state and start timer to revert
+      setState(() {
+        _isSuccess = true;
+      });
+      _successTimer = Timer(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            _isSuccess = false;
+          });
+          // Pop the page after the color feedback is shown
+          Navigator.of(context).pop();
+        }
+      });
+
     } catch (e) {
       if (mounted) {
         showSnackBar(context, 'Failed to save task: $e', isError: true);
@@ -160,6 +179,16 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine the button's background color based on _isSuccess
+    final Color resolvedBackgroundColor = _isSuccess
+        ? Colors.green
+        : Theme.of(context).elevatedButtonTheme.style?.backgroundColor?.resolve({}) ?? Theme.of(context).colorScheme.primary;
+
+    // Determine the button's foreground color (text/icon)
+    final Color resolvedForegroundColor = _isSuccess
+        ? Colors.white
+        : Theme.of(context).elevatedButtonTheme.style?.foregroundColor?.resolve({}) ?? Theme.of(context).colorScheme.onPrimary;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.taskToEdit == null ? 'Add New Task' : 'Edit Task'),
@@ -313,6 +342,16 @@ class _AddTaskPageState extends State<AddTaskPage> {
                           child: Text(widget.taskToEdit == null
                               ? 'Add Task'
                               : 'Update Task'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            // Conditional background color and foreground color
+                            backgroundColor: resolvedBackgroundColor,
+                            foregroundColor: resolvedForegroundColor,
+                            // Removed overlayColor
+                          ),
                         ),
                         const SizedBox(height: 24),
                       ],

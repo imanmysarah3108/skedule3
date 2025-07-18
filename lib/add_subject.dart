@@ -62,9 +62,9 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
     // Reset success state and cancel any active timer before starting new submission
     setState(() {
       _isLoading = true;
-      _isSuccess = false;
+      _isSuccess = false; // Reset success state
     });
-    _successTimer?.cancel();
+    _successTimer?.cancel(); // Cancel any previous timer
 
     try {
       final subjectId = _subjectIdController.text.trim();
@@ -153,6 +153,17 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine the button's background color based on _isSuccess
+    final Color resolvedBackgroundColor = _isSuccess
+        ? Colors.green
+        : Theme.of(context).elevatedButtonTheme.style?.backgroundColor?.resolve({}) ?? Theme.of(context).colorScheme.primary;
+
+    // Determine the button's foreground color (text/icon)
+    final Color resolvedForegroundColor = _isSuccess
+        ? Colors.white
+        : Theme.of(context).elevatedButtonTheme.style?.foregroundColor?.resolve({}) ?? Theme.of(context).colorScheme.onPrimary;
+
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add New Subject'),
@@ -236,9 +247,10 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          // Conditional background color
-                          backgroundColor: _isSuccess ? Colors.green : null, // null means use theme default
-                          foregroundColor: _isSuccess ? Colors.white : null, // Ensure text/icon is visible
+                          // Conditional background color and foreground color
+                          backgroundColor: resolvedBackgroundColor,
+                          foregroundColor: resolvedForegroundColor,
+                          // Removed the overlayColor property for the hover effect
                         ),
                       ),
                     ],
