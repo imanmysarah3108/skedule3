@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:skedule3/main.dart'; // For supabase instance and showSnackBar
+import 'dart:async'; // Import for Timer (if still using for success message)
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -22,6 +23,10 @@ class _SignUpPageState extends State<SignUpPage> {
 
   bool _isLoading = false;
   String? _errorMessage;
+
+  // New state variables for button feedback (if applicable, from add_subject)
+  // bool _isSuccess = false; // Not directly needed for this button, but kept if you want similar feedback
+  // Timer? _successTimer; // Not directly needed for this button
 
   @override
   void initState() {
@@ -49,6 +54,7 @@ class _SignUpPageState extends State<SignUpPage> {
     _nameFocusNode.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
+    // _successTimer?.cancel(); // Cancel the timer if it was used here
     super.dispose();
   }
 
@@ -249,7 +255,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
 
-                    // 3) Sign Up button
+                    // 3) Sign Up button with new styling
                     _isLoading
                         ? const CircularProgressIndicator()
                         : SizedBox(
@@ -258,11 +264,14 @@ class _SignUpPageState extends State<SignUpPage> {
                             child: ElevatedButton(
                               onPressed: _signUp,
                               style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).colorScheme.primary, // Base color purple
+                                foregroundColor: Colors.white, // Text color white
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12), // Match card roundedness
                                 ),
+                                overlayColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.1), // Subtle splash/hover effect
                               ),
                               child: const Text('Sign Up'),
                             ),
