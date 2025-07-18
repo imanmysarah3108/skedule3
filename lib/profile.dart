@@ -33,7 +33,10 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final userId = supabase.auth.currentUser?.id;
       if (userId == null) {
-        showSnackBar(context, 'User not logged in.', isError: true);
+        // Delay showSnackBar call
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showSnackBar(context, 'User not logged in.', isError: true);
+        });
         return;
       }
       final data = await supabase
@@ -44,7 +47,10 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() => _userProfile = UserProfile.fromJson(data));
     } catch (e) {
       if (mounted) {
-        showSnackBar(context, 'Failed to load profile: $e', isError: true);
+        // Delay showSnackBar call
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showSnackBar(context, 'Failed to load profile: $e', isError: true);
+        });
       }
     } finally {
       if (mounted) {
