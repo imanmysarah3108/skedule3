@@ -3,9 +3,9 @@ import 'package:skedule3/add_subject.dart';
 import 'package:skedule3/add_task.dart';
 import 'package:skedule3/edit_class.dart';
 import 'package:skedule3/homepage.dart';
-import 'package:skedule3/login.dart'; // Assuming you have this file
+import 'package:skedule3/login.dart'; 
 import 'package:skedule3/profile.dart';
-import 'package:skedule3/signup.dart'; // Assuming you have this file
+import 'package:skedule3/signup.dart'; 
 import 'package:skedule3/weekschedule.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
@@ -52,22 +52,6 @@ class SkeduleApp extends StatefulWidget {
 }
 
 class _SkeduleAppState extends State<SkeduleApp> {
-  // REMOVED THE onAuthStateChange.listen FROM HERE
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-  //     final event = data.event;
-  //     WidgetsBinding.instance.addPostFrameCallback((_) {
-  //       if (event == AuthChangeEvent.signedIn) {
-  //         Navigator.of(context).pushReplacementNamed('/home');
-  //       } else if (event == AuthChangeEvent.signedOut) {
-  //         Navigator.of(context).pushReplacementNamed('/login');
-  //       }
-  //     });
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -150,7 +134,6 @@ class _SkeduleAppState extends State<SkeduleApp> {
           ),
         ),
       ),
-      // This initialRoute logic is correct and handles the starting point
       initialRoute: Supabase.instance.client.auth.currentUser == null ? '/login' : '/home',
       routes: {
         '/login': (context) => const LoginPage(),
@@ -262,7 +245,7 @@ class Class {
   final TimeOfDay endTime;
   final String colorHex;
   final bool reminder;
-  final String id; // Add this field to match Supabase 'id' column for userId
+  final String id; 
 
   Class({
     required this.classId,
@@ -276,7 +259,7 @@ class Class {
     required this.endTime,
     required this.colorHex,
     required this.reminder,
-    required this.id, // Make it required
+    required this.id, 
   });
 
   factory Class.fromJson(Map<String, dynamic> json) {
@@ -292,7 +275,7 @@ class Class {
       endTime: TimeOfDay.fromDateTime(DateTime.parse('2000-01-01 ${json['end_time']}')),
       colorHex: json['color_hex'],
       reminder: json['reminder'],
-      id: json['id'], // Ensure 'id' is parsed
+      id: json['id'], 
     );
   }
 

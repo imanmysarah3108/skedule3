@@ -43,7 +43,7 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
       final data = await supabase
           .from('class')
           .select()
-          .eq('id', userId) // <--- CRITICAL FIX: Filter by userId directly in the query
+          .eq('id', userId) 
           .order('start_time', ascending: true);
 
       log('WeekSchedulePage: Fetched ${data.length} classes from Supabase for user $userId.');
@@ -54,9 +54,6 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
         groupedClasses[day] = [];
       }
       for (var cls in allClasses) {
-        // This check (cls.id == userId) is now redundant because the Supabase query
-        // already filters by userId, but it's harmless to keep.
-        // We can simplify it to just check if the day exists in our map.
         if (groupedClasses.containsKey(cls.day)) {
           groupedClasses[cls.day]!.add(cls);
         }
@@ -181,12 +178,11 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
                       final cls = classesForDay[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
-                        elevation: 2, // Added subtle elevation for better pop-up effect
+                        elevation: 2, 
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12), // Slightly more rounded corners
+                          borderRadius: BorderRadius.circular(12), 
                         ),
                         child: InkWell(
-                          // The main tap action for editing
                           onTap: () async {
                             log('WeekSchedulePage: Tapped on class for EDIT: ${cls.subjectId}');
                             final result = await Navigator.push(
@@ -207,29 +203,27 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
                             padding: const EdgeInsets.all(16.0),
                             child: Row(
                               children: [
-                                // Color bar on the left
                                 Container(
                                   width: 8,
-                                  height: 80, // Increased height to match new content height
+                                  height: 80, 
                                   decoration: BoxDecoration(
                                     color: Color(int.parse(cls.colorHex.replaceAll('#', '0xFF'))),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
-                                const SizedBox(width: 16), // Increased space for better separation
+                                const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         cls.subjectId,
-                                        style: Theme.of(context).textTheme.titleLarge?.copyWith( // Made subject ID larger
+                                        style: Theme.of(context).textTheme.titleLarge?.copyWith( 
                                               fontWeight: FontWeight.bold,
                                               color: Theme.of(context).colorScheme.onSurface,
                                             ),
                                       ),
                                       const SizedBox(height: 4),
-                                      // Group Class Type and Lecturer
                                       Row(
                                         children: [
                                           Icon(Icons.person_outline, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
@@ -246,7 +240,7 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
                                         ],
                                       ),
                                       const SizedBox(height: 4),
-                                      // Group Time
+                                      
                                       Row(
                                         children: [
                                           Icon(Icons.access_time, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
@@ -254,14 +248,13 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
                                           Text(
                                             '${cls.startTime.format(context)} - ${cls.endTime.format(context)}',
                                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                  fontWeight: FontWeight.w600, // Make time slightly bolder
+                                                  fontWeight: FontWeight.w600, 
                                                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.9),
                                                 ),
                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 4),
-                                      // Group Location
                                       Row(
                                         children: [
                                           Icon(Icons.location_on_outlined, size: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
@@ -280,7 +273,6 @@ class _WeekSchedulePageState extends State<WeekSchedulePage> {
                                     ],
                                   ),
                                 ),
-                                // Popup menu for delete
                                 PopupMenuButton<String>(
                                   onSelected: (value) {
                                     if (value == 'delete') {

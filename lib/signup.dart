@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:skedule3/main.dart'; // For supabase instance and showSnackBar
-import 'dart:async'; // Import for Timer (if still using for success message)
+import 'package:skedule3/main.dart'; 
+import 'dart:async'; 
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -16,7 +16,6 @@ class _SignUpPageState extends State<SignUpPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // FocusNodes for hover-like effect
   final FocusNode _nameFocusNode = FocusNode();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
@@ -24,14 +23,9 @@ class _SignUpPageState extends State<SignUpPage> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // New state variables for button feedback (if applicable, from add_subject)
-  // bool _isSuccess = false; // Not directly needed for this button, but kept if you want similar feedback
-  // Timer? _successTimer; // Not directly needed for this button
-
   @override
   void initState() {
     super.initState();
-    // Add listeners to focus nodes to rebuild widget on focus change
     _nameFocusNode.addListener(_onFocusChange);
     _emailFocusNode.addListener(_onFocusChange);
     _passwordFocusNode.addListener(_onFocusChange);
@@ -39,7 +33,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _onFocusChange() {
     setState(() {
-      // Rebuilds the widget to update elevation/shadow based on focus
     });
   }
 
@@ -54,7 +47,6 @@ class _SignUpPageState extends State<SignUpPage> {
     _nameFocusNode.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
-    // _successTimer?.cancel(); // Cancel the timer if it was used here
     super.dispose();
   }
 
@@ -75,28 +67,22 @@ class _SignUpPageState extends State<SignUpPage> {
       );
 
       if (response.user != null) {
-        // --- CRITICAL: Create user profile entry after successful signup ---
-        // This addresses the "Key (userId) not present in user_profile" error
+
         await supabase.from('user_profile').insert({
           'id': response.user!.id,
           'email': response.user!.email,
-          'name': _nameController.text.trim(), // Use the name from the form
+          'name': _nameController.text.trim(), 
           'created_at': DateTime.now().toIso8601String(),
         });
-        // --- End of critical fix ---
 
         if (mounted) {
           showSnackBar(context, 'Account created successfully! Please check your email for verification if required.');
-          // Navigate to home or login based on your app's flow after signup
           Navigator.of(context).pushReplacementNamed('/home');
         }
       } else {
-        // This else block might be hit if email verification is required and
-        // the user isn't immediately signed in. Supabase's signUp often
-        // sends a verification email and doesn't sign in until confirmed.
         if (mounted) {
           showSnackBar(context, 'Registration successful! Please check your email to verify your account.', isError: false);
-          Navigator.of(context).pushReplacementNamed('/login'); // Go back to login to await verification
+          Navigator.of(context).pushReplacementNamed('/login'); 
         }
       }
     } on AuthException catch (e) {
@@ -122,7 +108,6 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-  // Helper to build an elevated input card
   Widget _buildElevatedInputCard({
     required TextEditingController controller,
     required String labelText,
@@ -133,18 +118,18 @@ class _SignUpPageState extends State<SignUpPage> {
   }) {
     final bool isFocused = focusNode.hasFocus;
     return Card(
-      elevation: isFocused ? 8 : 4, // Increased elevation on focus
+      elevation: isFocused ? 8 : 4, 
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isFocused ? Theme.of(context).colorScheme.primary : Colors.transparent, // Highlight border on focus
+          color: isFocused ? Theme.of(context).colorScheme.primary : Colors.transparent, 
           width: 2,
         ),
       ),
-      shadowColor: isFocused ? Theme.of(context).colorScheme.primary.withOpacity(0.4) : Theme.of(context).shadowColor.withOpacity(0.1), // Dynamic shadow color
-      margin: const EdgeInsets.only(bottom: 16), // Consistent spacing between input cards
+      shadowColor: isFocused ? Theme.of(context).colorScheme.primary.withOpacity(0.4) : Theme.of(context).shadowColor.withOpacity(0.1), 
+      margin: const EdgeInsets.only(bottom: 16), 
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Padding inside the card
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), 
         child: TextFormField(
           controller: controller,
           focusNode: focusNode,
@@ -152,8 +137,8 @@ class _SignUpPageState extends State<SignUpPage> {
           decoration: InputDecoration(
             labelText: labelText,
             prefixIcon: Icon(icon),
-            border: InputBorder.none, // Remove default border as Card provides it
-            contentPadding: const EdgeInsets.symmetric(vertical: 12), // Adjust content padding
+            border: InputBorder.none, 
+            contentPadding: const EdgeInsets.symmetric(vertical: 12), 
           ),
           validator: validator,
         ),
@@ -166,7 +151,7 @@ class _SignUpPageState extends State<SignUpPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sign Up'),
-        automaticallyImplyLeading: false, // Ensure no back arrow on signup
+        automaticallyImplyLeading: false, 
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -175,13 +160,12 @@ class _SignUpPageState extends State<SignUpPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1) "Register" title with "Create your new account" subtitle
               Text(
                 'Register',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary, // Purple color
+                      color: Theme.of(context).colorScheme.primary, 
                     ),
               ),
               const SizedBox(height: 8),
@@ -189,16 +173,15 @@ class _SignUpPageState extends State<SignUpPage> {
                 'Create your new account',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.grey, // Grey color
+                      color: Colors.grey, 
                     ),
               ),
-              const SizedBox(height: 48), // Increased space
+              const SizedBox(height: 48), 
 
               Form(
                 key: _formKey,
                 child: Column(
                   children: [
-                    // 2) Name, Email, Password sections with pop-up/hover effect
                     _buildElevatedInputCard(
                       controller: _nameController,
                       labelText: 'Username',
@@ -244,7 +227,6 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Error message display
                     if (_errorMessage != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
@@ -255,23 +237,22 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
 
-                    // 3) Sign Up button with new styling
                     _isLoading
                         ? const CircularProgressIndicator()
                         : SizedBox(
-                            width: double.infinity, // Make button stretch
-                            height: 56, // Make button box big a little bit
+                            width: double.infinity, 
+                            height: 56, 
                             child: ElevatedButton(
                               onPressed: _signUp,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary, // Base color purple
-                                foregroundColor: Colors.white, // Text color white
+                                backgroundColor: Theme.of(context).colorScheme.primary, 
+                                foregroundColor: Colors.white, 
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12), // Match card roundedness
+                                  borderRadius: BorderRadius.circular(12), 
                                 ),
-                                overlayColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.1), // Subtle splash/hover effect
+                                overlayColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.1), 
                               ),
                               child: const Text('Sign Up'),
                             ),
@@ -281,17 +262,16 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
               const SizedBox(height: 24),
 
-              // 4) "Already have account?" text
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Already have an account? ',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey, // Grey color
+                          color: Colors.grey, 
                         ),
                   ),
-                  // 5) "Log in" with line and blue text color
+
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushReplacementNamed('/login');
@@ -299,9 +279,9 @@ class _SignUpPageState extends State<SignUpPage> {
                     child: Text(
                       'Log in',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.primary, // Blue color (primary color)
+                            color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline, // Underline
+                            decoration: TextDecoration.underline, 
                           ),
                     ),
                   ),

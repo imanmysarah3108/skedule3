@@ -15,7 +15,6 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // FocusNodes for hover-like effect
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
@@ -25,14 +24,14 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    // Add listeners to focus nodes to rebuild widget on focus change
+
     _emailFocusNode.addListener(_onFocusChange);
     _passwordFocusNode.addListener(_onFocusChange);
   }
 
   void _onFocusChange() {
     setState(() {
-      // Rebuilds the widget to update elevation/shadow based on focus
+
     });
   }
 
@@ -69,7 +68,6 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.of(context).pushReplacementNamed('/home');
         }
       } else {
-        // This else block might be hit if the user is not confirmed yet (e.g., email verification pending)
         setState(() {
           _errorMessage = 'Login failed. Please check your credentials or verify your email.';
         });
@@ -100,7 +98,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Helper to build an elevated input card
   Widget _buildElevatedInputCard({
     required TextEditingController controller,
     required String labelText,
@@ -111,18 +108,18 @@ class _LoginPageState extends State<LoginPage> {
   }) {
     final bool isFocused = focusNode.hasFocus;
     return Card(
-      elevation: isFocused ? 8 : 4, // Increased elevation on focus
+      elevation: isFocused ? 8 : 4, 
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isFocused ? Theme.of(context).colorScheme.primary : Colors.transparent, // Highlight border on focus
+          color: isFocused ? Theme.of(context).colorScheme.primary : Colors.transparent, 
           width: 2,
         ),
       ),
-      shadowColor: isFocused ? Theme.of(context).colorScheme.primary.withOpacity(0.4) : Theme.of(context).shadowColor.withOpacity(0.1), // Dynamic shadow color
-      margin: const EdgeInsets.only(bottom: 16), // Consistent spacing between input cards
+      shadowColor: isFocused ? Theme.of(context).colorScheme.primary.withOpacity(0.4) : Theme.of(context).shadowColor.withOpacity(0.1), 
+      margin: const EdgeInsets.only(bottom: 16), 
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Padding inside the card
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: TextFormField(
           controller: controller,
           focusNode: focusNode,
@@ -130,8 +127,8 @@ class _LoginPageState extends State<LoginPage> {
           decoration: InputDecoration(
             labelText: labelText,
             prefixIcon: Icon(icon),
-            border: InputBorder.none, // Remove default border as Card provides it
-            contentPadding: const EdgeInsets.symmetric(vertical: 12), // Adjust content padding
+            border: InputBorder.none, 
+            contentPadding: const EdgeInsets.symmetric(vertical: 12), 
           ),
           validator: validator,
         ),
@@ -144,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
-        automaticallyImplyLeading: false, // Ensure no back arrow on login
+        automaticallyImplyLeading: false, 
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -153,31 +150,28 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1) "Welcome Back" title
               Text(
                 'Welcome Back',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary, // Purple color (primary)
+                      color: Theme.of(context).colorScheme.primary, 
                     ),
               ),
               const SizedBox(height: 8),
-              // 2) "Login to your account" subtitle
               Text(
                 'Login to your account',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.grey, // Grey color
+                      color: Colors.grey,
                     ),
               ),
-              const SizedBox(height: 48), // Increased space
+              const SizedBox(height: 48), 
 
               Form(
                 key: _formKey,
                 child: Column(
                   children: [
-                    // 3) Email and Password sections with pop-up/hover effect
                     _buildElevatedInputCard(
                       controller: _emailController,
                       labelText: 'Email',
@@ -210,8 +204,6 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
                     const SizedBox(height: 24),
-
-                    // Error message display
                     if (_errorMessage != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
@@ -221,22 +213,20 @@ class _LoginPageState extends State<LoginPage> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-
-                    // 4) Login button
                     _isLoading
                         ? const CircularProgressIndicator()
                         : SizedBox(
-                            width: double.infinity, // Make button stretch
-                            height: 56, // Make button box big a little bit
+                            width: double.infinity, 
+                            height: 56, 
                             child: ElevatedButton(
                               onPressed: _signIn,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary, // Base color purple
-                                foregroundColor: Colors.white, // Text color white
+                                backgroundColor: Theme.of(context).colorScheme.primary, 
+                                foregroundColor: Colors.white, 
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12), // Match card roundedness
+                                  borderRadius: BorderRadius.circular(12), 
                                 ),
                               ),
                               child: const Text('Login'),
@@ -246,18 +236,15 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // 5) "Don't have an account?" text
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Don\'t have an account? ',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey, // Grey color
+                          color: Colors.grey,
                         ),
                   ),
-                  // 6) "Sign up" with line and blue text color
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushReplacement(
@@ -267,9 +254,9 @@ class _LoginPageState extends State<LoginPage> {
                     child: Text(
                       'Sign Up',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.primary, // Blue color (primary color)
+                            color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline, // Underline
+                            decoration: TextDecoration.underline, 
                           ),
                     ),
                   ),

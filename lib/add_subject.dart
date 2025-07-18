@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skedule3/main.dart';
-import 'dart:async'; // Import for Timer
+import 'dart:async'; 
 
 class AddSubjectPage extends StatefulWidget {
   const AddSubjectPage({super.key});
@@ -17,7 +17,7 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
   bool _isLoading = false;
   List<Map<String, dynamic>> _subjects = [];
 
-  // New state variables for button feedback
+  
   bool _isSuccess = false;
   Timer? _successTimer;
 
@@ -31,7 +31,7 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
   void dispose() {
     _subjectIdController.dispose();
     _subjectTitleController.dispose();
-    _successTimer?.cancel(); // Cancel the timer to prevent memory leaks
+    _successTimer?.cancel(); 
     super.dispose();
   }
 
@@ -59,12 +59,11 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
   Future<void> _submitSubject() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Reset success state and cancel any active timer before starting new submission
     setState(() {
       _isLoading = true;
-      _isSuccess = false; // Reset success state
+      _isSuccess = false; 
     });
-    _successTimer?.cancel(); // Cancel any previous timer
+    _successTimer?.cancel(); 
 
     try {
       final subjectId = _subjectIdController.text.trim();
@@ -81,9 +80,8 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
         showSnackBar(context, 'Subject added successfully!');
         _subjectIdController.clear();
         _subjectTitleController.clear();
-        await _fetchSubjects(); // Refresh the list
+        await _fetchSubjects(); 
 
-        // Set success state and start timer to revert
         setState(() {
           _isSuccess = true;
         });
@@ -141,7 +139,7 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
         await supabase.from('subject').delete().eq('subject_id', subjectId);
         if (mounted) {
           showSnackBar(context, 'Subject deleted!');
-          await _fetchSubjects(); // Refresh the list
+          await _fetchSubjects(); 
         }
       } catch (e) {
         if (mounted) {
@@ -153,12 +151,11 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine the button's background color based on _isSuccess
+    
     final Color resolvedBackgroundColor = _isSuccess
         ? Colors.green
         : Theme.of(context).elevatedButtonTheme.style?.backgroundColor?.resolve({}) ?? Theme.of(context).colorScheme.primary;
 
-    // Determine the button's foreground color (text/icon)
     final Color resolvedForegroundColor = _isSuccess
         ? Colors.white
         : Theme.of(context).elevatedButtonTheme.style?.foregroundColor?.resolve({}) ?? Theme.of(context).colorScheme.onPrimary;
@@ -173,15 +170,15 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- Add New Subject Form Section ---
+
             Card(
-              elevation: 4, // Added elevation for a "popping" effect
+              elevation: 4, 
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16), // Rounded corners for the card
+                borderRadius: BorderRadius.circular(16), 
               ),
-              margin: const EdgeInsets.only(bottom: 24), // Margin below the card
+              margin: const EdgeInsets.only(bottom: 24), 
               child: Padding(
-                padding: const EdgeInsets.all(20.0), // Increased padding inside the card
+                padding: const EdgeInsets.all(20.0), 
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -247,10 +244,8 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          // Conditional background color and foreground color
                           backgroundColor: resolvedBackgroundColor,
                           foregroundColor: resolvedForegroundColor,
-                          // Removed the overlayColor property for the hover effect
                         ),
                       ),
                     ],
@@ -258,8 +253,6 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
                 ),
               ),
             ),
-
-            // --- Your Subjects List Section ---
             Text(
               'Your Subjects:',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -271,18 +264,17 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
             if (_subjects.isEmpty)
               const Text('No subjects added yet.')
             else
-              // Using ListView.builder for better performance and explicit item separation
               ListView.builder(
-                shrinkWrap: true, // Important for nested ListView
-                physics: const NeverScrollableScrollPhysics(), // Prevents nested scrolling issues
+                shrinkWrap: true, 
+                physics: const NeverScrollableScrollPhysics(), 
                 itemCount: _subjects.length,
                 itemBuilder: (context, index) {
                   final subject = _subjects[index];
                   return Card(
-                    margin: const EdgeInsets.only(bottom: 12), // Spacing between cards
-                    elevation: 2, // Subtle elevation for each subject card
+                    margin: const EdgeInsets.only(bottom: 12),
+                    elevation: 2, 
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12), // Rounded corners for list items
+                      borderRadius: BorderRadius.circular(12), 
                     ),
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

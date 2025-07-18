@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skedule3/main.dart';
 import 'dart:developer';
-import 'dart:async'; // Import for Timer
+import 'dart:async'; 
 
 class AddEditClassPage extends StatefulWidget {
   final Class? classToEdit;
@@ -29,7 +29,7 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
   bool _setReminder = true;
   bool _isLoading = false;
 
-  // New state variables for button feedback
+
   bool _isSuccess = false;
   Timer? _successTimer;
 
@@ -69,7 +69,7 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
     _buildingController.dispose();
     _roomController.dispose();
     _lecturerController.dispose();
-    _successTimer?.cancel(); // Cancel the timer to prevent memory leaks
+    _successTimer?.cancel(); 
     super.dispose();
   }
 
@@ -136,13 +136,13 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
 
     setState(() {
       _isLoading = true;
-      _isSuccess = false; // Reset success state
+      _isSuccess = false; 
     });
-    _successTimer?.cancel(); // Cancel any previous timer
+    _successTimer?.cancel(); 
 
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
-      showSnackBar(context, 'User not logged in.', isError: true); // Corrected 'isStates' to 'isError'
+      showSnackBar(context, 'User not logged in.', isError: true); 
       setState(() => _isLoading = false);
       log('AddEditClassPage: User not logged in, cannot save.');
       return;
@@ -176,7 +176,6 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
         log('AddEditClassPage: Class updated successfully for class_id: ${widget.classToEdit!.classId}');
       }
 
-      // Set success state and start timer to revert
       setState(() {
         _isSuccess = true;
       });
@@ -185,7 +184,6 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
           setState(() {
             _isSuccess = false;
           });
-          // Pop the page after the color feedback is shown
           Navigator.of(context).pop(true);
         }
       });
@@ -204,12 +202,12 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
   @override
   Widget build(BuildContext context) {
     log('AddEditClassPage: build called.');
-    // Determine the button's background color based on _isSuccess
+
     final Color resolvedBackgroundColor = _isSuccess
         ? Colors.green
         : Theme.of(context).elevatedButtonTheme.style?.backgroundColor?.resolve({}) ?? Theme.of(context).colorScheme.primary;
 
-    // Determine the button's foreground color (text/icon)
+
     final Color resolvedForegroundColor = _isSuccess
         ? Colors.white
         : Theme.of(context).elevatedButtonTheme.style?.foregroundColor?.resolve({}) ?? Theme.of(context).colorScheme.onPrimary;
@@ -232,7 +230,7 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  // --- Class Information Section ---
+
                   Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -294,7 +292,6 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                     ),
                   ),
 
-                  // --- Location Details Section ---
                   Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -334,7 +331,6 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                     ),
                   ),
 
-                  // --- Schedule & Time Section ---
                   Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -369,9 +365,9 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                           Row(
                             children: [
                               Expanded(
-                                child: InkWell( // Use InkWell for tap feedback
+                                child: InkWell( 
                                   onTap: () => _selectTime(context, true),
-                                  child: InputDecorator( // Makes it look like a TextFormField
+                                  child: InputDecorator( 
                                     decoration: InputDecoration(
                                       labelText: 'Start Time',
                                       prefixIcon: const Icon(Icons.access_time),
@@ -394,9 +390,9 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                               ),
                               const SizedBox(width: 8),
                               Expanded(
-                                child: InkWell( // Use InkWell for tap feedback
+                                child: InkWell( 
                                   onTap: () => _selectTime(context, false),
-                                  child: InputDecorator( // Makes it look like a TextFormField
+                                  child: InputDecorator( 
                                     decoration: InputDecoration(
                                       labelText: 'End Time',
                                       prefixIcon: const Icon(Icons.access_time),
@@ -423,8 +419,6 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                       ),
                     ),
                   ),
-
-                  // --- Display & Reminders Section ---
                   Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -447,25 +441,25 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 8),
-                          Wrap( // Use Wrap for better responsiveness on smaller screens
-                            spacing: 8.0, // horizontal spacing
-                            runSpacing: 8.0, // vertical spacing
+                          Wrap( 
+                            spacing: 8.0, 
+                            runSpacing: 8.0,
                             children: _availableColors.map((colorHex) {
                               final isSelected = _selectedColor == colorHex;
                               return GestureDetector(
                                 onTap: () => setState(() => _selectedColor = colorHex),
                                 child: Container(
-                                  width: 36, // Increased size
-                                  height: 36, // Increased size
+                                  width: 36, 
+                                  height: 36, 
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: Color(int.parse(colorHex.replaceFirst('#', '0xff'))),
                                     border: Border.all(
-                                        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent, // Highlight with primary color
-                                        width: 3), // Thicker border for selection
+                                        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                                        width: 3), 
                                   ),
                                   child: isSelected
-                                      ? Icon(Icons.check, color: Colors.white, size: 20) // Checkmark when selected
+                                      ? Icon(Icons.check, color: Colors.white, size: 20) 
                                       : null,
                                 ),
                               );
@@ -484,7 +478,6 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                     ),
                   ),
 
-                  // --- Save Button ---
                   _isLoading
                       ? const CircularProgressIndicator()
                       : SizedBox(
@@ -497,10 +490,8 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              // Conditional background color and foreground color
                               backgroundColor: resolvedBackgroundColor,
                               foregroundColor: resolvedForegroundColor,
-                              // Removed overlayColor
                             ),
                             child: Text(widget.classToEdit == null ? 'Add Class' : 'Update Class'),
                           ),

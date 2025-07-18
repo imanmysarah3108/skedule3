@@ -33,7 +33,6 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final userId = supabase.auth.currentUser?.id;
       if (userId == null) {
-        // Delay showSnackBar call
         WidgetsBinding.instance.addPostFrameCallback((_) {
           showSnackBar(context, 'User not logged in.', isError: true);
         });
@@ -47,7 +46,6 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() => _userProfile = UserProfile.fromJson(data));
     } catch (e) {
       if (mounted) {
-        // Delay showSnackBar call
         WidgetsBinding.instance.addPostFrameCallback((_) {
           showSnackBar(context, 'Failed to load profile: $e', isError: true);
         });

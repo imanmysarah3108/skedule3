@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:skedule3/main.dart';
-import 'dart:async'; // Import for Timer
+import 'dart:async'; 
 
 class AddTaskPage extends StatefulWidget {
   final Assignment? taskToEdit;
@@ -26,7 +26,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   final List<String> _priorityLevels = ['high', 'medium', 'low'];
 
-  // New state variables for button feedback
   bool _isSuccess = false;
   Timer? _successTimer;
 
@@ -47,7 +46,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _successTimer?.cancel(); // Cancel the timer to prevent memory leaks
+    _successTimer?.cancel(); 
     super.dispose();
   }
 
@@ -117,9 +116,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
     setState(() {
       _isLoading = true;
-      _isSuccess = false; // Reset success state
+      _isSuccess = false; 
     });
-    _successTimer?.cancel(); // Cancel any previous timer
+    _successTimer?.cancel(); 
 
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
@@ -154,7 +153,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
         }
       }
 
-      // Set success state and start timer to revert
       setState(() {
         _isSuccess = true;
       });
@@ -163,7 +161,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
           setState(() {
             _isSuccess = false;
           });
-          // Pop the page after the color feedback is shown
+
           Navigator.of(context).pop();
         }
       });
@@ -179,12 +177,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine the button's background color based on _isSuccess
     final Color resolvedBackgroundColor = _isSuccess
         ? Colors.green
         : Theme.of(context).elevatedButtonTheme.style?.backgroundColor?.resolve({}) ?? Theme.of(context).colorScheme.primary;
-
-    // Determine the button's foreground color (text/icon)
     final Color resolvedForegroundColor = _isSuccess
         ? Colors.white
         : Theme.of(context).elevatedButtonTheme.style?.foregroundColor?.resolve({}) ?? Theme.of(context).colorScheme.onPrimary;
@@ -194,13 +189,12 @@ class _AddTaskPageState extends State<AddTaskPage> {
         title: Text(widget.taskToEdit == null ? 'Add New Task' : 'Edit Task'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0), // Adjusted padding
+        padding: const EdgeInsets.all(16.0), 
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch cards
+            crossAxisAlignment: CrossAxisAlignment.stretch, 
             children: [
-              // --- Task Details Section ---
               Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -222,7 +216,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         controller: _titleController,
                         decoration: const InputDecoration(
                           labelText: 'Task Title',
-                          prefixIcon: Icon(Icons.assignment_outlined), // Added icon
+                          prefixIcon: Icon(Icons.assignment_outlined), 
                         ),
                         validator: (value) =>
                             value == null || value.isEmpty ? 'Enter task title' : null,
@@ -233,7 +227,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         decoration:
                             const InputDecoration(
                               labelText: 'Description (Optional)',
-                              prefixIcon: Icon(Icons.description_outlined), // Added icon
+                              prefixIcon: Icon(Icons.description_outlined), 
                             ),
                         maxLines: 3,
                       ),
@@ -241,8 +235,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
                   ),
                 ),
               ),
-
-              // --- Assignment Specifics Section ---
               Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -288,7 +280,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       const SizedBox(height: 16),
                       InkWell(
                         onTap: () => _selectDueDate(context),
-                        child: InputDecorator( // Use InputDecorator for consistent styling
+                        child: InputDecorator( 
                           decoration: InputDecoration(
                             labelText: 'Due Date',
                             prefixIcon: const Icon(Icons.date_range_outlined),
@@ -344,10 +336,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            // Conditional background color and foreground color
                             backgroundColor: resolvedBackgroundColor,
                             foregroundColor: resolvedForegroundColor,
-                            // Removed overlayColor
                           ),
                           child: Text(widget.taskToEdit == null
                               ? 'Add Task'
