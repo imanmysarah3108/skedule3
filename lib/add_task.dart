@@ -339,9 +339,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       children: [
                         ElevatedButton(
                           onPressed: _saveTask,
-                          child: Text(widget.taskToEdit == null
-                              ? 'Add Task'
-                              : 'Update Task'),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
@@ -352,6 +349,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
                             foregroundColor: resolvedForegroundColor,
                             // Removed overlayColor
                           ),
+                          child: Text(widget.taskToEdit == null
+                              ? 'Add Task'
+                              : 'Update Task'),
                         ),
                         const SizedBox(height: 24),
                       ],

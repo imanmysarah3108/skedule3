@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:skedule3/main.dart'; // For supabase instance and showSnackBar
+import 'package:skedule3/main.dart'; 
+import 'package:skedule3/onboardingscreen.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -259,7 +260,9 @@ class _LoginPageState extends State<LoginPage> {
                   // 6) "Sign up" with line and blue text color
                   GestureDetector(
                     onTap: () {
-                      Navigator.of(context).pushReplacementNamed('/signup');
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => const OnboardingPage()),
+                      );
                     },
                     child: Text(
                       'Sign Up',

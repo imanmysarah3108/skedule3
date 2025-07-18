@@ -492,7 +492,6 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                           height: 48,
                           child: ElevatedButton(
                             onPressed: _saveClass,
-                            child: Text(widget.classToEdit == null ? 'Add Class' : 'Update Class'),
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
@@ -503,6 +502,7 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                               foregroundColor: resolvedForegroundColor,
                               // Removed overlayColor
                             ),
+                            child: Text(widget.classToEdit == null ? 'Add Class' : 'Update Class'),
                           ),
                         ),
                   const SizedBox(height: 24),
