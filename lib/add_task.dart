@@ -258,24 +258,34 @@ class _AddTaskPageState extends State<AddTaskPage> {
                               ? const Text('No subjects available for this user. Please add one first.')
                               : DropdownButtonFormField<String>(
                                   value: _selectedSubjectId,
+                                  isExpanded: true,
                                   decoration: const InputDecoration(
                                     labelText: 'Subject',
                                     prefixIcon: Icon(Icons.book_outlined),
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                                   ),
-                                  hint: const Text('Choose a subject'),
                                   items: _userSubjects.map((subject) {
-                                    final id = subject['subject_id'] ?? '';
-                                    final title = subject['subject_title'] ?? '';
                                     return DropdownMenuItem<String>(
-                                      value: id,
-                                      child: Text('$id - $title'),
+                                      value: subject['subject_id'],
+                                      child: Text(
+                                        '${subject['subject_id']} - ${subject['subject_title']}',
+                                        overflow: TextOverflow.ellipsis,
+                                        softWrap: false,
+                                      ),
                                     );
                                   }).toList(),
-                                  onChanged: (value) =>
-                                      setState(() => _selectedSubjectId = value),
-                                  validator: (value) => value == null || value.isEmpty
-                                      ? 'Please select a subject'
-                                      : null,
+                                  selectedItemBuilder: (context) {
+                                    return _userSubjects.map((subject) {
+                                      return Text(
+                                        '${subject['subject_id']} - ${subject['subject_title']}',
+                                        overflow: TextOverflow.ellipsis,
+                                        softWrap: false,
+                                      );
+                                    }).toList();
+                                  },
+                                    onChanged: (value) => setState(() => _selectedSubjectId = value),
+                                    validator: (value) => value == null ? 'Please select a subject' : null,
                                 ),
                       const SizedBox(height: 16),
                       InkWell(

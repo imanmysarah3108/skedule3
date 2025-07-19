@@ -250,24 +250,41 @@ class _AddEditClassPageState extends State<AddEditClassPage> {
                           const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
                             value: _selectedSubjectId,
+                            isExpanded: true, 
                             decoration: const InputDecoration(
                               labelText: 'Subject',
                               prefixIcon: Icon(Icons.book_outlined),
                               isDense: true,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                             ),
                             items: _subjects.map((subject) {
                               return DropdownMenuItem<String>(
                                 value: subject.subjectId,
-                                child: Text(
-                                  '${subject.subjectId} - ${subject.subjectTitle}',
-                                  overflow: TextOverflow.ellipsis,
-                                  softWrap: false,
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) => setState(() => _selectedSubjectId = value),
-                            validator: (value) => value == null ? 'Please select a subject' : null,
-                          ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${subject.subjectId} - ${subject.subjectTitle}',
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: false,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                              selectedItemBuilder: (context) {
+                                return _subjects.map((subject) {
+                                  return Text(
+                                    '${subject.subjectId} - ${subject.subjectTitle}',
+                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: false,
+                                  );
+                                }).toList();
+                              },
+                              onChanged: (value) => setState(() => _selectedSubjectId = value),
+                              validator: (value) => value == null ? 'Please select a subject' : null,
+                            ),
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _classTypeController,
